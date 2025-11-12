@@ -1,0 +1,16 @@
+---
+name: "Test"
+on: # yamllint disable-line rule:truthy
+  push:
+  pull_request:
+jobs:
+  Test:
+    runs-on: "ubuntu-24.04"
+    steps:
+    - uses: "actions/checkout@v4"
+    - uses: "dtolnay/rust-toolchain@stable"
+      with:
+        toolchain: "1.87.0"
+    - name: "provision dev tools"
+      run: "./install"
+    - run: "tinyrick test"
