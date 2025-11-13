@@ -39,6 +39,8 @@ Windows programs, e.g. `hello.bat`, `*.exe`, etc. reduce permissions to more app
 
 The metadata is corrected in the archive, regardless of the original file metadata. This smooths out common SDLC workflows, creating multi-platform engineering teams.
 
+See `chandler -h` for more options.
+
 # ABOUT
 
 chandler's default rule set is tuned to support precompiled executable archives for UNIX and/or Windows applications. While also allowing archives to include nonexecutable entries.
