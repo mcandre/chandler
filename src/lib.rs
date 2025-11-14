@@ -192,8 +192,7 @@ impl Default for Chandler {
                     permissions: Some(0o755u32),
                 },
                 Rule{
-                    when: Condition{ mode: None, path: Some(regex::Regex::new(r"(?i)^(.*\.(bat|cmd|exe|jar|md|ps1|tar|tar\.gz|tgz|txt|wasm|zip))|(.*[/\\]js[/|\\]wasm[/|\\].+)$"
-                ).unwrap()) },
+                    when: Condition{ mode: None, path: Some(regex::Regex::new(r"^.*/.*\..*$").unwrap()) },
                     skip: false,
                     mtime: None,
                     uid: None,

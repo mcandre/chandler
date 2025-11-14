@@ -6,8 +6,6 @@
 
 chandler is a tool for software developers to normalize application tape archives (`*.TGZ`, `*.TAR.GZ` files).
 
-chandler automates industry norms for file permissions, file exclusions, lexicographical sorting, and more.
-
 # EXAMPLE
 
 ```console
@@ -29,35 +27,28 @@ drwxr-xr-x  0 1000   1000        0 Nov 13 14:36 hello-1.0.0
 -rw-r--r--  0 1000   1000       22 Nov 13 14:34 hello-1.0.0/hello.bat
 ```
 
-## Debrief
-
-chandler aligns file permissions as files enter the tarball.
-
-Most files are assumed to be UNIX executables, e.g., `hello`, and automatically receive `chmod 0755` permissions suitable for running commands.
-
-Windows programs, e.g. `hello.bat`, `*.exe`, etc. reduce permissions to more appropriate `chmod 0644`. As do non-application assets, e.g. `README.md`, `*.txt`, etc.
-
-The metadata is corrected in the archive, regardless of the original file metadata. This smooths out common SDLC workflows, creating multi-platform engineering teams.
-
 See `chandler -h` for more options.
 
 # ABOUT
 
-chandler's default rule set is tuned to support precompiled executable archives for UNIX and/or Windows applications. While also allowing archives to include nonexecutable entries.
+chandler automates industry norms for file permissions, file exclusions, lexicographical sorting, and more.
+
+Extensionless files are generally assumed to be UNIX executables (`hello`, etc.) These automatically receive `chmod 0755` permissions suitable for running commands.
+
+Child paths with period (`.`) are assumed to be nonexecutable assets, receiving `chmod 0644` permissions. This includes Windows centric programs (`hello.bat`, `*.exe`, etc.), scripts that include a file extension (`*.js`, `*.lua`, `*.pl`, `*.py`, `*.rb`, `*.sh`, etc.), as well as documents (`*.json`, `*.md`, `*.toml`, `*.txt`, `*.xml`, `*.yaml`, `*.yml`, etc.), and archives (`*.tar`, `*.tar.gz`, `*.tgz`, `*.zip`, etc.)
+
+Metadata is normalized as each entry enters the archive, regardless of the original file metadata. This smooths out common SDLC workflows, especially for multi-platform engineering teams.
 
 Note: The term *executable* may include binary applications as well as shell script commands.
 
 # DEFAULT RULES
 
-* **Assume executable permissions by default**
-* Drop executable permissions for Windows executables
-* Drop executable permissions for common non-application assets
+chandler's default rule set is tuned for application release archives, especially native UNIX executables, Windows executables, and/or interpreted scripts. While also allowing for nonexecutable assets.
+
+* **Assume executable permissions for child paths without a period (`.`) by default**
+* Drop executable permissions for common nonexecutable files
 * Normalize user and group ID's
 * Skip common junk files
-
-Rules like these help to reduce glitches during software builds. For example, when manipulating binaries or shell scripts with Windows environments.
-
-By carefully adjusting metadata as build artifacts enter the archive, we enable incredibly portable build systems. So that more engineers can contribute to projects, regardless of whether they're using UNIX or Windows development environments.
 
 # CRATE
 
