@@ -1,6 +1,7 @@
 //! chandler assembles tape archives.
 
 extern crate flate2;
+extern crate normalize_path;
 extern crate regex;
 extern crate serde;
 extern crate tar;
@@ -8,6 +9,7 @@ extern crate toml;
 extern crate walkdir;
 
 use self::serde::{Deserialize, Serialize};
+use normalize_path::NormalizePath;
 use std::env;
 use std::fs;
 use std::io;
@@ -192,7 +194,7 @@ impl Default for Chandler {
                     permissions: Some(0o755u32),
                 },
                 Rule{
-                    when: Condition{ mode: None, path: Some(regex::Regex::new(r"^.*/.*\..*$").unwrap()) },
+                    when: Condition{ mode: Some(FileMode::File), path: Some(regex::Regex::new(r"(?i)^bashrc|bsdmakefile|changelog|gnumakefile|license|makefile|readme|aliases|exports|fstab|group|hosts|issue|kshrc|mime|mkshrc|modules|profile|protocols|resolv|services|temp|tmp|zshenv|zshrc|((.*/)?etc/.+)|((.*/)?.*\..*)$").unwrap()) },
                     skip: false,
                     mtime: None,
                     uid: None,
@@ -200,6 +202,16 @@ impl Default for Chandler {
                     username: None,
                     groupname: None,
                     permissions: Some(0o644u32),
+                },
+                Rule{
+                    when: Condition{ mode: Some(FileMode::File), path: Some(regex::Regex::new(r"(?i)^(.*/)?etc/init.d/.+$").unwrap()) },
+                    skip: false,
+                    mtime: None,
+                    uid: Some(1000u64),
+                    gid: Some(1000u64),
+                    username: None,
+                    groupname: None,
+                    permissions: Some(0o755u32),
                 },
             ],
         }
@@ -223,14 +235,14 @@ impl Chandler {
         for entry in walker {
             let entry = entry?;
             let pth = entry.path();
+            let pth_clean = pth.normalize();
+            let pth_str = pth_clean.to_str().ok_or_else(|| {
+                io::Error::other(format!("unable to render path {:?}", pth_clean))
+            })?;
 
-            if pth.as_os_str().is_empty() {
+            if pth_str.is_empty() || pth_str == "." {
                 continue;
             }
-
-            let pth_str = pth
-                .to_str()
-                .ok_or_else(|| io::Error::other(format!("unable to render path {:?}", pth)))?;
 
             let metadata = entry.metadata()?;
             let mut header = match self.header_type {
@@ -239,7 +251,7 @@ impl Chandler {
                 HeaderType::UStar => tar::Header::new_ustar(),
             };
 
-            header.set_path(pth)?;
+            header.set_path(&pth_clean)?;
 
             let mtime = metadata
                 .modified()?
@@ -288,7 +300,7 @@ impl Chandler {
             if filemode == FileMode::Directory {
                 builder.append(&header, &[] as &[u8])?;
             } else if filemode == FileMode::File {
-                let mut source_file = fs::File::open(pth)?;
+                let mut source_file = fs::File::open(pth_clean)?;
                 builder.append(&header, &mut source_file)?;
             }
         }

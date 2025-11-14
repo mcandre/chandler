@@ -11,35 +11,50 @@ chandler is a tool for software developers to normalize application tape archive
 ```console
 $ cd example
 
-$ ls -l hello-1.0.0
-total 24
--rw-r--r--  1 andrew  staff   31 Nov 13 14:35 hello
--rw-r--r--  1 andrew  staff   22 Nov 13 14:34 hello.bat
--rw-r--r--  1 andrew  staff  186 Nov 13 14:48 README.md
+$ tree -p
+[drwxr-xr-x]  .
+├── [-rw-r--r--]  .gitignore
+├── [drwxr-xr-x]  etc
+│   └── [drwxr-xr-x]  init.d
+│       └── [-rw-r--r--]  sshd
+└── [drwxr-xr-x]  hello-1.0.0
+    ├── [-rw-r--r--]  hello
+    ├── [-rw-r--r--]  hello.bat
+    └── [-rw-r--r--]  README
 
-$ chandler -f hello-1.0.0.tgz hello-1.0.0
-archived entries to hello-1.0.0.tgz
+4 directories, 5 files
 
-$ tar tzvf hello-1.0.0.tgz
-drwxr-xr-x  0 1000   1000        0 Nov 13 14:36 hello-1.0.0
--rw-r--r--  0 1000   1000      170 Nov 13 14:38 hello-1.0.0/README.md
--rwxr-xr-x  0 1000   1000       31 Nov 13 14:35 hello-1.0.0/hello
+$ chandler -vf ../hello-1.0.0.tgz .
+a .gitignore
+a etc
+a etc/init.d
+a etc/init.d/sshd
+a hello-1.0.0
+a hello-1.0.0/README
+a hello-1.0.0/hello
+a hello-1.0.0/hello.bat
+archived entries to ../hello-1.0.0.tgz
+
+$ tar -tzvf ../hello-1.0.0.tgz
+-rw-r--r--  0 1000   1000       22 Nov 13 14:48 .gitignore
+drwxr-xr-x  0 1000   1000        0 Nov 14 11:17 etc
+drwxr-xr-x  0 1000   1000        0 Nov 14 11:17 etc/init.d
+-rwxr-xr-x  0 1000   1000       42 Nov 14 11:17 etc/init.d/sshd
+drwxr-xr-x  0 1000   1000        0 Nov 14 11:18 hello-1.0.0
+-rw-r--r--  0 1000   1000      186 Nov 13 14:48 hello-1.0.0/README
+-rw-r--r--  0 1000   1000       31 Nov 13 14:35 hello-1.0.0/hello
 -rw-r--r--  0 1000   1000       22 Nov 13 14:34 hello-1.0.0/hello.bat
 ```
+
+Above, chandler aligns target file metadata to industry standards, repairing glitches in source file metadata.
 
 See `chandler -h` for more options.
 
 # ABOUT
 
-chandler automates industry norms for file permissions, file exclusions, lexicographical sorting, and more.
-
-Extensionless files are generally assumed to be UNIX executables (`hello`, etc.) These automatically receive `chmod 0755` permissions suitable for running commands.
-
-Child paths with period (`.`) are assumed to be nonexecutable assets, receiving `chmod 0644` permissions. This includes Windows centric programs (`hello.bat`, `*.exe`, etc.), scripts that include a file extension (`*.js`, `*.lua`, `*.pl`, `*.py`, `*.rb`, `*.sh`, etc.), as well as documents (`*.json`, `*.md`, `*.toml`, `*.txt`, `*.xml`, `*.yaml`, `*.yml`, etc.), and archives (`*.tar`, `*.tar.gz`, `*.tgz`, `*.zip`, etc.)
+chandler automates industry norms for file permissions, file exclusions, lexicographical sorting, file path normalization, and more.
 
 Metadata is normalized as each entry enters the archive, regardless of the original file metadata. This smooths out common SDLC workflows, especially for multi-platform engineering teams.
-
-Note: The term *executable* may include binary applications as well as shell script commands.
 
 # DEFAULT RULES
 
@@ -49,6 +64,18 @@ chandler's default rule set is tuned for application release archives, especiall
 * Drop executable permissions for common nonexecutable files
 * Normalize user and group ID's
 * Skip common junk files
+
+Extensionless files are generally assumed to be UNIX executables. These automatically receive `chmod 0755` permissions suitable for running commands.
+
+Executables includes compilied binary programs (`hello`), interpreted text scripts (`configure`), and legacy SysVinit scripts (`etc/init.d/sshd`).
+
+Executables often includes directories, as these permissions are requisite in order for relevant users to perform directory traversal.
+
+Common extensionless basenames are recognized as *nonexecutable* (`LICENSE`, `README`, `makefile`, etc.)
+
+Child paths with period (`.`) are assumed to be nonexecutable assets, receiving `chmod 0644` permissions.
+
+This includes Windows centric programs (`hello.bat`, `*.com`, `*.exe`, etc.), scripts that include a file extension (`*.bat`, `*.cmd`, `*.js`, `*.lua`, `*.pl`, `*.py`, `*.rb`, `*.sh`, etc.), as well as documents (`*.json`, `*.md`, `*.toml`, `*.txt`, `*.xml`, `*.yaml`, `*.yml`, etc.), archives (`*.jar`, `*.tar`, `*.tar.gz`, `*.tgz`, `*.zip`, etc.), and most descendents of the UNIX configuration directory `etc`.
 
 # CRATE
 
@@ -76,6 +103,7 @@ $ cargo install --force --path .
 
 * a UNIX-like environment (e.g. [WSL](https://learn.microsoft.com/en-us/windows/wsl/))
 * POSIX compliant [tar](https://pubs.opengroup.org/onlinepubs/7908799/xcu/tar.html)
+* [tree](https://en.wikipedia.org/wiki/Tree_(command))
 
 # CONTRIBUTING
 

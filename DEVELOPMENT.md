@@ -4,6 +4,8 @@
 * [Docker](https://www.docker.com/) 20.10.12+
 * [rustup](https://rustup.rs/)
 * [Rust](https://www.rust-lang.org/en-US/)
+* POSIX compliant [tar](https://pubs.opengroup.org/onlinepubs/7908799/xcu/tar.html)
+* [tree](https://en.wikipedia.org/wiki/Tree_(command))
 * Provision additional dev tools with `./install`
 
 ## Recommended
@@ -13,7 +15,6 @@
 * Apply `DOCKER_DEFAULT_PLATFORM` = `linux/amd64` environment variable
 * [ASDF](https://asdf-vm.com/) 0.18 (run `asdf reshim` after provisioning)
 * [direnv](https://direnv.net/) 2
-* POSIX compliant [tar](https://pubs.opengroup.org/onlinepubs/7908799/xcu/tar.html)
 
 # INSTALL BINARIES FROM SOURCE
 
