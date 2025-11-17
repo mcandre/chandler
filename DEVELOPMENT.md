@@ -4,7 +4,7 @@
 * POSIX compliant [make](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/make.html)
 * [rustup](https://rustup.rs/)
 * [Rust](https://www.rust-lang.org/en-US/)
-* POSIX compliant [tar](https://pubs.opengroup.org/onlinepubs/7908799/xcu/tar.html)
+* tar with gzip support (e.g., [GNU](https://www.gnu.org/software/tar/manual/tar.html)/[BSD](https://man.freebsd.org/cgi/man.cgi?tar(1))/[Windows](https://ss64.com/nt/tar.html))
 * [tree](https://en.wikipedia.org/wiki/Tree_(command))
 * Provision additional dev tools with `make`
 
@@ -12,6 +12,7 @@
 
 * a host capable of running musl/Linux containers (e.g. a GNU/Linux, musl/Linux, macOS, or Windows host)
 * a UNIX-like environment (e.g. [WSL](https://learn.microsoft.com/en-us/windows/wsl/))
+* case sensitive or case aware file systems (e.g. ext4, exFAT, APFS, NTFS)
 * [ASDF](https://asdf-vm.com/) 0.18 (run `asdf reshim` after provisioning)
 * [direnv](https://direnv.net/) 2
 * [Docker First Aid Kit](https://github.com/mcandre/docker-first-aid-kit)

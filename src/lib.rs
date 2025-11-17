@@ -22,6 +22,17 @@ lazy_static::lazy_static! {
     /// including file extensions (.BAT, .EXE, and so on),
     /// as well as file paths missing traditional basenames (.gitignore, .git, and so on).
     pub static ref EXTENSIONED_FILE_PATH_PATTERN: regex::Regex = regex::Regex::new(r"^(.*/)*[^/]*\.[^/]*$").unwrap();
+
+    /// FILE_MANAGER_CACHE_PATTERN matches file paths with file manager metadata files.
+    pub static ref FILE_MANAGER_CACHE_PATTERN: regex::Regex = regex::Regex::new(r"^(.*/)?(\.DS_Store|Thumbs\.db)$").unwrap();
+
+    /// ETC_LINEAGE_PATTERN matches file paths within etc directory trees.
+    pub static ref ETC_LINEAGE_PATTERN: regex::Regex = regex::Regex::new(r"^(.*/)?etc(/.*)?$").unwrap();
+
+    /// SYSTEM_V_INIT_LINEAGE_PATTERN matches file paths within SysVinit (etc/init.d) directory trees.
+    pub static ref SYSTEM_V_INIT_LINEAGE_PATTERN: regex::Regex = regex::Regex::new(r"^(.*/)?etc/init\.d(/.*)?$").unwrap();
+
+    pub static ref COMMON_NONEXECUTABLE_FILE_PATH_PATTERN: regex::Regex = regex::Regex::new(r"(?i)^aliases|(ba|(m)?k|z)shrc|(bsd|gnu)?makefile|changelog|exports|fstab|license|readme|group|hosts|issue|mime|modules|profile|protocols|resolv|services|t(e)?mp|zshenv|((.*/)?etc/.+)$").unwrap();
 }
 
 #[test]
@@ -30,13 +41,85 @@ fn test_extensioned_file_path_pattern() {
     assert!(!pattern.is_match("hello"));
     assert!(!pattern.is_match("HELLO"));
     assert!(!pattern.is_match("hello-1.0/docs"));
-    assert!(pattern.is_match("hello.bat"));
     assert!(pattern.is_match("HELLO.BAT"));
-    assert!(pattern.is_match("hello.exe"));
+    assert!(pattern.is_match("hello.bat"));
+    assert!(pattern.is_match("applications/hello.bat"));
     assert!(pattern.is_match("HELLO.EXE"));
+    assert!(pattern.is_match("hello.exe"));
+    assert!(pattern.is_match("applications/hello.exe"));
     assert!(pattern.is_match(".gitignore"));
-    assert!(pattern.is_match("degenerate."));
     assert!(pattern.is_match("DEGENERATE."));
+    assert!(pattern.is_match("degenerate."));
+}
+
+#[test]
+fn test_file_manager_cache_pattern() {
+    let pattern = FILE_MANAGER_CACHE_PATTERN.clone();
+    assert!(pattern.is_match(".DS_Store"));
+    assert!(pattern.is_match("docs/.DS_Store"));
+    assert!(pattern.is_match("/docs/.DS_Store"));
+    assert!(!pattern.is_match("docs"));
+    assert!(!pattern.is_match("/docs"));
+    assert!(pattern.is_match("Thumbs.db"));
+    assert!(pattern.is_match("docs/Thumbs.db"));
+}
+
+#[test]
+fn test_etc_lineage_pattern() {
+    let pattern = ETC_LINEAGE_PATTERN.clone();
+    assert!(pattern.is_match("/etc"));
+    assert!(pattern.is_match("etc"));
+    assert!(pattern.is_match("/etc/ssh"));
+    assert!(pattern.is_match("etc/ssh"));
+    assert!(pattern.is_match("files/etc/ssh"));
+    assert!(pattern.is_match("/etc/sshd_config"));
+    assert!(pattern.is_match("etc/sshd_config"));
+    assert!(!pattern.is_match("/root"));
+    assert!(!pattern.is_match("root"));
+}
+
+#[test]
+fn test_system_v_init_lineage_pattern() {
+    let pattern = SYSTEM_V_INIT_LINEAGE_PATTERN.clone();
+    assert!(pattern.is_match("/etc/init.d"));
+    assert!(pattern.is_match("etc/init.d"));
+    assert!(pattern.is_match("/etc/init.d/ssh"));
+    assert!(pattern.is_match("etc/init.d/ssh"));
+    assert!(!pattern.is_match("/root/.ssh"));
+    assert!(!pattern.is_match("root/.ssh"));
+}
+
+#[test]
+fn test_common_nonexecutable_file_path_pattern() {
+    let pattern = COMMON_NONEXECUTABLE_FILE_PATH_PATTERN.clone();
+    assert!(pattern.is_match("bashrc"));
+    assert!(pattern.is_match("bsdmakefile"));
+    assert!(pattern.is_match("changelog"));
+    assert!(pattern.is_match("gnumakefile"));
+    assert!(pattern.is_match("license"));
+    assert!(pattern.is_match("makefile"));
+    assert!(pattern.is_match("README"));
+    assert!(pattern.is_match("readme"));
+    assert!(pattern.is_match("aliases"));
+    assert!(pattern.is_match("exports"));
+    assert!(pattern.is_match("fstab"));
+    assert!(pattern.is_match("group"));
+    assert!(pattern.is_match("hosts"));
+    assert!(pattern.is_match("issue"));
+    assert!(pattern.is_match("kshrc"));
+    assert!(pattern.is_match("mime"));
+    assert!(pattern.is_match("mkshrc"));
+    assert!(pattern.is_match("modules"));
+    assert!(pattern.is_match("profile"));
+    assert!(pattern.is_match("protocols"));
+    assert!(pattern.is_match("resolv"));
+    assert!(pattern.is_match("services"));
+    assert!(pattern.is_match("temp"));
+    assert!(pattern.is_match("tmp"));
+    assert!(pattern.is_match("zshenv"));
+    assert!(pattern.is_match("zshrc"));
+    assert!(pattern.is_match("/etc/sshd/sshd_config"));
+    assert!(pattern.is_match("etc/sshd/sshd_config"));
 }
 
 /// HeaderType models a tarball header type.
@@ -196,8 +279,11 @@ impl Default for Chandler {
             header_type: HeaderType::UStar,
             cwd: None,
             rules: vec![
-                Rule{
-                    when: Condition{ mode: None, path: Some(regex::Regex::new(r"^(\.DS_Store)|(Thumbs\.db)$").unwrap()) },
+                Rule {
+                    when: Condition {
+                        mode: None,
+                        path: Some(FILE_MANAGER_CACHE_PATTERN.clone()),
+                    },
                     skip: true,
                     mtime: None,
                     uid: None,
@@ -206,8 +292,11 @@ impl Default for Chandler {
                     groupname: None,
                     permissions: None,
                 },
-                Rule{
-                    when: Condition{ mode: None, path: None },
+                Rule {
+                    when: Condition {
+                        mode: None,
+                        path: None,
+                    },
                     skip: false,
                     mtime: None,
                     uid: Some(1000u64),
@@ -216,8 +305,11 @@ impl Default for Chandler {
                     groupname: None,
                     permissions: Some(0o755u32),
                 },
-                Rule{
-                    when: Condition{ mode: Some(FileMode::File), path: Some(regex::Regex::new(r"(?i)^bashrc|bsdmakefile|changelog|gnumakefile|license|makefile|readme|aliases|exports|fstab|group|hosts|issue|kshrc|mime|mkshrc|modules|profile|protocols|resolv|services|temp|tmp|zshenv|zshrc|((.*/)?etc/.+)$").unwrap()) },
+                Rule {
+                    when: Condition {
+                        mode: Some(FileMode::File),
+                        path: Some(COMMON_NONEXECUTABLE_FILE_PATH_PATTERN.clone()),
+                    },
                     skip: false,
                     mtime: None,
                     uid: None,
@@ -226,8 +318,11 @@ impl Default for Chandler {
                     groupname: None,
                     permissions: Some(0o644u32),
                 },
-                Rule{
-                    when: Condition{ mode: Some(FileMode::File), path: Some(EXTENSIONED_FILE_PATH_PATTERN.clone()) },
+                Rule {
+                    when: Condition {
+                        mode: Some(FileMode::File),
+                        path: Some(EXTENSIONED_FILE_PATH_PATTERN.clone()),
+                    },
                     skip: false,
                     mtime: None,
                     uid: None,
@@ -236,12 +331,28 @@ impl Default for Chandler {
                     groupname: None,
                     permissions: Some(0o644u32),
                 },
-                Rule{
-                    when: Condition{ mode: Some(FileMode::File), path: Some(regex::Regex::new(r"(?i)^(.*/)?etc/init.d/.+$").unwrap()) },
+                Rule {
+                    when: Condition {
+                        mode: None,
+                        path: Some(ETC_LINEAGE_PATTERN.clone()),
+                    },
                     skip: false,
                     mtime: None,
-                    uid: Some(1000u64),
-                    gid: Some(1000u64),
+                    uid: Some(0u64),
+                    gid: Some(0u64),
+                    username: None,
+                    groupname: None,
+                    permissions: None,
+                },
+                Rule {
+                    when: Condition {
+                        mode: None,
+                        path: Some(SYSTEM_V_INIT_LINEAGE_PATTERN.clone()),
+                    },
+                    skip: false,
+                    mtime: None,
+                    uid: None,
+                    gid: None,
                     username: None,
                     groupname: None,
                     permissions: Some(0o755u32),

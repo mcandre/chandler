@@ -15,20 +15,22 @@ $ tree -p
 [drwxr-xr-x]  .
 ├── [-rw-r--r--]  .gitignore
 ├── [drwxr-xr-x]  etc
-│   └── [drwxr-xr-x]  init.d
-│       └── [-rw-r--r--]  sshd
+│   ├── [drwxr-xr-x]  init.d
+│   │   └── [-rw-r--r--]  ssh
+│   └── [-rw-r--r--]  profile
 └── [drwxr-xr-x]  hello-1.0.0
     ├── [-rw-r--r--]  hello
     ├── [-rw-r--r--]  hello.bat
     └── [-rw-r--r--]  README
 
-4 directories, 5 files
+4 directories, 6 files
 
-$ chandler -vf ../hello-1.0.0.tgz .
+$ chandler -zvf ../hello-1.0.0.tgz .
 a .gitignore
 a etc
 a etc/init.d
-a etc/init.d/sshd
+a etc/init.d/ssh
+a etc/profile
 a hello-1.0.0
 a hello-1.0.0/README
 a hello-1.0.0/hello
@@ -37,9 +39,10 @@ archived entries to ../hello-1.0.0.tgz
 
 $ tar -tzvf ../hello-1.0.0.tgz
 -rw-r--r--  0 1000   1000       22 Nov 13 14:48 .gitignore
-drwxr-xr-x  0 1000   1000        0 Nov 14 11:17 etc
-drwxr-xr-x  0 1000   1000        0 Nov 14 11:17 etc/init.d
--rwxr-xr-x  0 1000   1000       42 Nov 14 11:17 etc/init.d/sshd
+drwxr-xr-x  0 0      0           0 Nov 17 14:08 etc
+drwxr-xr-x  0 0      0           0 Nov 17 13:57 etc/init.d
+-rwxr-xr-x  0 0      0          42 Nov 14 11:17 etc/init.d/ssh
+-rw-r--r--  0 0      0          95 Nov 17 14:08 etc/profile
 drwxr-xr-x  0 1000   1000        0 Nov 14 11:18 hello-1.0.0
 -rw-r--r--  0 1000   1000      186 Nov 13 14:48 hello-1.0.0/README
 -rwxr-xr-x  0 1000   1000       31 Nov 13 14:35 hello-1.0.0/hello
@@ -102,7 +105,8 @@ $ cargo install --force --path .
 ## Recommended
 
 * a UNIX-like environment (e.g. [WSL](https://learn.microsoft.com/en-us/windows/wsl/))
-* POSIX compliant [tar](https://pubs.opengroup.org/onlinepubs/7908799/xcu/tar.html)
+* case sensitive or case aware file systems (e.g. ext4, exFAT, APFS, NTFS)
+* tar with gzip support (e.g., [GNU](https://www.gnu.org/software/tar/manual/tar.html)/[BSD](https://man.freebsd.org/cgi/man.cgi?tar(1))/[Windows](https://ss64.com/nt/tar.html))
 * [tree](https://en.wikipedia.org/wiki/Tree_(command))
 
 # CONTRIBUTING

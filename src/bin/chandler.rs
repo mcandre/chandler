@@ -21,6 +21,7 @@ fn main() {
     opts.optopt("f", "file", "output path (TGZ or TAR.GZ)", "<archive>");
     opts.optflag("h", "help", "print usage info");
     opts.optflag("V", "version", "print version info");
+    opts.optflag("z", "", "apply gzip compression (default)");
 
     let usage: String = opts.usage(&brief);
     let arguments: Vec<String> = env::args().collect();
