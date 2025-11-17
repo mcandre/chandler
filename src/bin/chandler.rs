@@ -17,6 +17,7 @@ fn main() {
 
     let mut opts: getopts::Options = getopts::Options::new();
     opts.optopt("C", "cwd", "customize current working directory", "<dir>");
+    opts.optflag("c", "", "create archive (default)");
     opts.optflag("v", "verbose", "enable additional logging");
     opts.optopt("f", "file", "output path (TGZ or TAR.GZ)", "<archive>");
     opts.optflag("h", "help", "print usage info");

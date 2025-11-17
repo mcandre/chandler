@@ -25,7 +25,7 @@ $ tree -p
 
 4 directories, 6 files
 
-$ chandler -zvf ../hello-1.0.0.tgz .
+$ chandler -czvf ../hello-1.0.0.tgz .
 a .gitignore
 a etc
 a etc/init.d
@@ -38,15 +38,15 @@ a hello-1.0.0/hello.bat
 archived entries to ../hello-1.0.0.tgz
 
 $ tar -tzvf ../hello-1.0.0.tgz
--rw-r--r--  0 1000   1000       22 Nov 13 14:48 .gitignore
-drwxr-xr-x  0 0      0           0 Nov 17 14:08 etc
-drwxr-xr-x  0 0      0           0 Nov 17 13:57 etc/init.d
--rwxr-xr-x  0 0      0          42 Nov 14 11:17 etc/init.d/ssh
--rw-r--r--  0 0      0          95 Nov 17 14:08 etc/profile
-drwxr-xr-x  0 1000   1000        0 Nov 14 11:18 hello-1.0.0
--rw-r--r--  0 1000   1000      186 Nov 13 14:48 hello-1.0.0/README
--rwxr-xr-x  0 1000   1000       31 Nov 13 14:35 hello-1.0.0/hello
--rw-r--r--  0 1000   1000       22 Nov 13 14:34 hello-1.0.0/hello.bat
+-rw-r--r--  0 501    20         22 Nov 13 14:48 .gitignore
+drwxr-xr-x  0 501    20          0 Nov 17 14:08 etc
+drwxr-xr-x  0 501    20          0 Nov 17 13:57 etc/init.d
+-rwxr-xr-x  0 501    20         42 Nov 14 11:17 etc/init.d/ssh
+-rw-r--r--  0 501    20         95 Nov 17 14:08 etc/profile
+drwxr-xr-x  0 501    20          0 Nov 14 11:18 hello-1.0.0
+-rw-r--r--  0 501    20        186 Nov 13 14:48 hello-1.0.0/README
+-rwxr-xr-x  0 501    20         31 Nov 13 14:35 hello-1.0.0/hello
+-rw-r--r--  0 501    20         22 Nov 13 14:34 hello-1.0.0/hello.bat
 ```
 
 Above, chandler aligns target file metadata to industry standards, repairing glitches in source file metadata.
@@ -65,7 +65,6 @@ chandler's default rule set is tuned for application release archives, especiall
 
 * **Assume executable permissions for child paths without a period (`.`) by default**
 * Drop executable permissions for common nonexecutable files
-* Normalize user and group ID's
 * Skip common junk files
 
 Extensionless files are generally assumed to be UNIX executables. These automatically receive `chmod 0755` permissions suitable for running commands.
@@ -79,6 +78,8 @@ Common extensionless basenames are recognized as *nonexecutable* (`LICENSE`, `RE
 Child paths with period (`.`) are assumed to be nonexecutable assets, receiving `chmod 0644` permissions.
 
 This includes Windows centric programs (`hello.bat`, `*.com`, `*.exe`, etc.), scripts that include a file extension (`*.bat`, `*.cmd`, `*.js`, `*.lua`, `*.pl`, `*.py`, `*.rb`, `*.sh`, etc.), as well as documents (`*.json`, `*.md`, `*.toml`, `*.txt`, `*.xml`, `*.yaml`, `*.yml`, etc.), archives (`*.jar`, `*.tar`, `*.tar.gz`, `*.tgz`, `*.zip`, etc.), and most descendents of the UNIX configuration directory `etc`.
+
+`.DS_Store` and `Thumbs.db` are skipped.
 
 # CRATE
 
