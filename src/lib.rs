@@ -26,8 +26,10 @@ lazy_static::lazy_static! {
     /// FILE_MANAGER_CACHE_PATTERN matches file paths with file manager metadata files.
     pub static ref FILE_MANAGER_CACHE_PATTERN: regex::Regex = regex::Regex::new(r"^(.*/)?(\.DS_Store|Thumbs\.db)$").unwrap();
 
-    /// ETC_LINEAGE_PATTERN matches file paths within etc directory trees.
-    pub static ref ETC_LINEAGE_PATTERN: regex::Regex = regex::Regex::new(r"^(.*/)?etc(/.*)?$").unwrap();
+    /// ROOT_OWNED_FILE_PATH_PATTERN matches file paths conventionally owned by root:root in UNIX environments, such as "/bin", "/etc", "etc", "/home", "/root", "root", and so on.
+    ///
+    /// Certain directory names are ambiguous when nested as fixtures, such as "myproject/bin".
+    pub static ref ROOT_OWNED_FILE_PATH_PATTERN: regex::Regex = regex::Regex::new(r"^((/(bin|etc|home|root)?)|((.*/)?(etc|root)(/.*)?))$").unwrap();
 
     /// SYSTEM_V_INIT_LINEAGE_PATTERN matches file paths within SysVinit (etc/init.d) directory trees.
     pub static ref SYSTEM_V_INIT_LINEAGE_PATTERN: regex::Regex = regex::Regex::new(r"^(.*/)?etc/init\.d(/.*)?$").unwrap();
@@ -65,8 +67,13 @@ fn test_file_manager_cache_pattern() {
 }
 
 #[test]
-fn test_etc_lineage_pattern() {
-    let pattern = ETC_LINEAGE_PATTERN.clone();
+fn test_root_owned_file_path_pattern() {
+    let pattern = ROOT_OWNED_FILE_PATH_PATTERN.clone();
+    assert!(pattern.is_match("/"));
+    assert!(pattern.is_match("/bin"));
+    assert!(pattern.is_match("/home"));
+    assert!(!pattern.is_match("/home/alice"));
+    assert!(!pattern.is_match("home/alice"));
     assert!(pattern.is_match("/etc"));
     assert!(pattern.is_match("etc"));
     assert!(pattern.is_match("/etc/ssh"));
@@ -74,8 +81,8 @@ fn test_etc_lineage_pattern() {
     assert!(pattern.is_match("files/etc/ssh"));
     assert!(pattern.is_match("/etc/sshd_config"));
     assert!(pattern.is_match("etc/sshd_config"));
-    assert!(!pattern.is_match("/root"));
-    assert!(!pattern.is_match("root"));
+    assert!(pattern.is_match("/root"));
+    assert!(pattern.is_match("root"));
 }
 
 #[test]
@@ -334,7 +341,7 @@ impl Default for Chandler {
                 Rule {
                     when: Condition {
                         mode: None,
-                        path: Some(ETC_LINEAGE_PATTERN.clone()),
+                        path: Some(ROOT_OWNED_FILE_PATH_PATTERN.clone()),
                     },
                     skip: false,
                     mtime: None,
