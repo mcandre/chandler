@@ -35,6 +35,8 @@ fn test_extensioned_file_path_pattern() {
     assert!(pattern.is_match("hello.exe"));
     assert!(pattern.is_match("HELLO.EXE"));
     assert!(pattern.is_match(".gitignore"));
+    assert!(pattern.is_match("degenerate."));
+    assert!(pattern.is_match("DEGENERATE."));
 }
 
 /// HeaderType models a tarball header type.
