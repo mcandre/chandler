@@ -12,6 +12,7 @@ documentation = "https://docs.rs/chandler/latest/chandler/"
 die = "0.2.0"
 flate2 = "1.1.5"
 getopts = "0.2.24"
+lazy_static = "1.5.0"
 normalize-path = "0.2.1"
 regex = "1.12.2"
 serde = { version = "1.0.228", features = ["derive"] }

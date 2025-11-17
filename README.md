@@ -42,7 +42,7 @@ drwxr-xr-x  0 1000   1000        0 Nov 14 11:17 etc/init.d
 -rwxr-xr-x  0 1000   1000       42 Nov 14 11:17 etc/init.d/sshd
 drwxr-xr-x  0 1000   1000        0 Nov 14 11:18 hello-1.0.0
 -rw-r--r--  0 1000   1000      186 Nov 13 14:48 hello-1.0.0/README
--rw-r--r--  0 1000   1000       31 Nov 13 14:35 hello-1.0.0/hello
+-rwxr-xr-x  0 1000   1000       31 Nov 13 14:35 hello-1.0.0/hello
 -rw-r--r--  0 1000   1000       22 Nov 13 14:34 hello-1.0.0/hello.bat
 ```
 

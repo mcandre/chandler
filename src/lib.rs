@@ -1,6 +1,7 @@
 //! chandler assembles tape archives.
 
 extern crate flate2;
+extern crate lazy_static;
 extern crate normalize_path;
 extern crate regex;
 extern crate serde;
@@ -15,6 +16,26 @@ use std::fs;
 use std::io;
 use std::path;
 use std::time;
+
+lazy_static::lazy_static! {
+    /// EXTENSIONED_FILE_PATH_PATTERN matches file paths with extensions,
+    /// including file extensions (.BAT, .EXE, and so on),
+    /// as well as file paths missing traditional basenames (.gitignore, .git, and so on).
+    pub static ref EXTENSIONED_FILE_PATH_PATTERN: regex::Regex = regex::Regex::new(r"^(.*/)*[^/]*\.[^/]*$").unwrap();
+}
+
+#[test]
+fn test_extensioned_file_path_pattern() {
+    let pattern = EXTENSIONED_FILE_PATH_PATTERN.clone();
+    assert!(!pattern.is_match("hello"));
+    assert!(!pattern.is_match("HELLO"));
+    assert!(!pattern.is_match("hello-1.0/docs"));
+    assert!(pattern.is_match("hello.bat"));
+    assert!(pattern.is_match("HELLO.BAT"));
+    assert!(pattern.is_match("hello.exe"));
+    assert!(pattern.is_match("HELLO.EXE"));
+    assert!(pattern.is_match(".gitignore"));
+}
 
 /// HeaderType models a tarball header type.
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
@@ -82,16 +103,16 @@ pub struct Rule {
 impl Rule {
     /// is_match determines whether a rule relates to an entry.
     pub fn is_match(&self, filemode: &FileMode, pth: &str) -> bool {
-        if let Some(when_mode) = &self.when.mode {
-            if when_mode != filemode {
-                return false;
-            }
+        if let Some(when_mode) = &self.when.mode
+            && when_mode != filemode
+        {
+            return false;
         }
 
-        if let Some(when_path) = &self.when.path {
-            if !when_path.is_match(pth) {
-                return false;
-            }
+        if let Some(when_path) = &self.when.path
+            && !when_path.is_match(pth)
+        {
+            return false;
         }
 
         true
@@ -194,7 +215,17 @@ impl Default for Chandler {
                     permissions: Some(0o755u32),
                 },
                 Rule{
-                    when: Condition{ mode: Some(FileMode::File), path: Some(regex::Regex::new(r"(?i)^bashrc|bsdmakefile|changelog|gnumakefile|license|makefile|readme|aliases|exports|fstab|group|hosts|issue|kshrc|mime|mkshrc|modules|profile|protocols|resolv|services|temp|tmp|zshenv|zshrc|((.*/)?etc/.+)|((.*/)?.*\..*)$").unwrap()) },
+                    when: Condition{ mode: Some(FileMode::File), path: Some(regex::Regex::new(r"(?i)^bashrc|bsdmakefile|changelog|gnumakefile|license|makefile|readme|aliases|exports|fstab|group|hosts|issue|kshrc|mime|mkshrc|modules|profile|protocols|resolv|services|temp|tmp|zshenv|zshrc|((.*/)?etc/.+)$").unwrap()) },
+                    skip: false,
+                    mtime: None,
+                    uid: None,
+                    gid: None,
+                    username: None,
+                    groupname: None,
+                    permissions: Some(0o644u32),
+                },
+                Rule{
+                    when: Condition{ mode: Some(FileMode::File), path: Some(EXTENSIONED_FILE_PATH_PATTERN.clone()) },
                     skip: false,
                     mtime: None,
                     uid: None,
