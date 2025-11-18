@@ -107,7 +107,7 @@ $ cargo install --force --path .
 
 * a UNIX-like environment (e.g. [WSL](https://learn.microsoft.com/en-us/windows/wsl/))
 * case sensitive or case aware file systems (e.g. ext4, exFAT, APFS, NTFS)
-* tar with gzip support (e.g., [GNU](https://www.gnu.org/software/tar/manual/tar.html)/[BSD](https://man.freebsd.org/cgi/man.cgi?tar(1))/[Windows](https://ss64.com/nt/tar.html))
+* [GNU](https://www.gnu.org/software/tar/)/[BSD](https://man.freebsd.org/cgi/man.cgi?tar(1))/[Windows](https://ss64.com/nt/tar.html) tar with gzip support
 * [tree](https://en.wikipedia.org/wiki/Tree_(command))
 
 # CONTRIBUTING

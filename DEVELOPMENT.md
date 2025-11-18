@@ -4,7 +4,7 @@
 * POSIX compliant [make](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/make.html)
 * [rustup](https://rustup.rs/)
 * [Rust](https://www.rust-lang.org/en-US/)
-* tar with gzip support (e.g., [GNU](https://www.gnu.org/software/tar/manual/tar.html)/[BSD](https://man.freebsd.org/cgi/man.cgi?tar(1))/[Windows](https://ss64.com/nt/tar.html))
+* [GNU](https://www.gnu.org/software/tar/)/[BSD](https://man.freebsd.org/cgi/man.cgi?tar(1))/[Windows](https://ss64.com/nt/tar.html) tar with gzip support
 * [tree](https://en.wikipedia.org/wiki/Tree_(command))
 * Provision additional dev tools with `make`
 
