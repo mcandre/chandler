@@ -123,6 +123,7 @@ BSD-2-Clause
 * [factorio](https://github.com/mcandre/factorio)
 * [crit](https://github.com/mcandre/crit)
 * [linters](https://github.com/mcandre/linters)
+* [todolint](https://github.com/mcandre/todolint)
 * [tug](https://github.com/mcandre/tug)
 
 📼
