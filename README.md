@@ -11,38 +11,22 @@ chandler is a tool for software developers to normalize application tape archive
 ```console
 $ cd example
 
-$ tree -p
-[drwxr-xr-x]  .
-├── [-rw-r--r--]  .gitignore
-├── [drwxr-xr-x]  etc
-│   ├── [drwxr-xr-x]  init.d
-│   │   └── [-rw-r--r--]  ssh
-│   └── [-rw-r--r--]  profile
-└── [drwxr-xr-x]  hello-1.0.0
-    ├── [-rw-r--r--]  hello
-    ├── [-rw-r--r--]  hello.bat
-    └── [-rw-r--r--]  README
+$ tree -p hello-1.0.0
+[drwxr-xr-x]  hello-1.0.0
+├── [-rw-r--r--]  hello
+├── [-rw-r--r--]  hello.bat
+└── [-rw-r--r--]  README
 
-4 directories, 6 files
+1 directory, 3 files
 
-$ chandler -czvf ../hello-1.0.0.tgz .
-a .gitignore
-a etc
-a etc/init.d
-a etc/init.d/ssh
-a etc/profile
+$ chandler -czvf hello-1.0.0.tgz hello-1.0.0
 a hello-1.0.0
 a hello-1.0.0/README
 a hello-1.0.0/hello
 a hello-1.0.0/hello.bat
-archived entries to ../hello-1.0.0.tgz
+archived entries to hello-1.0.0.tgz
 
-$ tar -tzvf ../hello-1.0.0.tgz
--rw-r--r--  0 501    20         22 Nov 13 14:48 .gitignore
-drwxr-xr-x  0 501    20          0 Nov 17 14:08 etc
-drwxr-xr-x  0 501    20          0 Nov 17 13:57 etc/init.d
--rwxr-xr-x  0 501    20         42 Nov 14 11:17 etc/init.d/ssh
--rw-r--r--  0 501    20         95 Nov 17 14:08 etc/profile
+$ tar -tzvf hello-1.0.0.tgz
 drwxr-xr-x  0 501    20          0 Nov 14 11:18 hello-1.0.0
 -rw-r--r--  0 501    20        186 Nov 13 14:48 hello-1.0.0/README
 -rwxr-xr-x  0 501    20         31 Nov 13 14:35 hello-1.0.0/hello

@@ -18,15 +18,46 @@ use std::path;
 use std::sync;
 use std::time;
 
+/// COMMON_SKIP_PATHS collects file paths commonly excluded from clean archives,
+/// such as file manager metadata files.
+pub static COMMON_SKIP_PATHS: sync::LazyLock<Vec<&str>> =
+    sync::LazyLock::new(|| vec![".DS_Store", "Thumbs.db"]);
+
+/// SKIP_PATH_PATTERN_TEMPLATE combines with `skip_paths` and a pipe (|) delimited path string to form path exclusion patterns.
+pub static SKIP_PATH_PATTERN_TEMPLATE: &str = r"^(.*/)?({skip_paths})$";
+
+/// generate_skip_path_pattern converts a collection of skip paths to a regex.
+#[allow(clippy::result_large_err)]
+pub fn generate_skip_path_pattern(
+    skip_paths: &[&str],
+) -> Result<fancy_regex::Regex, fancy_regex::Error> {
+    fancy_regex::Regex::new(
+        &SKIP_PATH_PATTERN_TEMPLATE.replace("{skip_paths}", &skip_paths.join("|")),
+    )
+}
+
+/// DEFAULT_SKIP_PATH_PATTERN excludes COMMON_SKIP_FILES.
+pub static DEFAULT_SKIP_PATH_PATTERN: sync::LazyLock<fancy_regex::Regex> =
+    sync::LazyLock::new(|| generate_skip_path_pattern(&COMMON_SKIP_PATHS).unwrap());
+
+#[test]
+fn test_default_skip_path_pattern() -> Result<(), fancy_regex::Error> {
+    let pattern = &*DEFAULT_SKIP_PATH_PATTERN;
+    assert!(pattern.is_match(".DS_Store")?);
+    assert!(pattern.is_match("docs/.DS_Store")?);
+    assert!(pattern.is_match("/docs/.DS_Store")?);
+    assert!(!pattern.is_match("docs")?);
+    assert!(!pattern.is_match("/docs")?);
+    assert!(pattern.is_match("Thumbs.db")?);
+    assert!(pattern.is_match("docs/Thumbs.db")?);
+    Ok(())
+}
+
 /// EXTENSIONED_FILE_PATH_PATTERN matches file paths with extensions,
 /// including file extensions (.BAT, .EXE, and so on),
 /// as well as file paths missing traditional basenames (.gitignore, .git, and so on).
 pub static EXTENSIONED_FILE_PATH_PATTERN: sync::LazyLock<fancy_regex::Regex> =
     sync::LazyLock::new(|| fancy_regex::Regex::new(r"^(.*/)*[^/]*\.[^/]*$").unwrap());
-
-/// FILE_MANAGER_CACHE_PATTERN matches file paths with file manager metadata files.
-pub static FILE_MANAGER_CACHE_PATTERN: sync::LazyLock<fancy_regex::Regex> =
-    sync::LazyLock::new(|| fancy_regex::Regex::new(r"^(.*/)?(\.DS_Store|Thumbs\.db)$").unwrap());
 
 /// SYSTEM_V_INIT_LINEAGE_PATTERN matches file paths within SysVinit (etc/init.d) directory trees.
 pub static SYSTEM_V_INIT_LINEAGE_PATTERN: sync::LazyLock<fancy_regex::Regex> =
@@ -52,19 +83,6 @@ fn test_extensioned_file_path_pattern() -> Result<(), fancy_regex::Error> {
     assert!(pattern.is_match(".gitignore")?);
     assert!(pattern.is_match("DEGENERATE.")?);
     assert!(pattern.is_match("degenerate.")?);
-    Ok(())
-}
-
-#[test]
-fn test_file_manager_cache_pattern() -> Result<(), fancy_regex::Error> {
-    let pattern = &*FILE_MANAGER_CACHE_PATTERN;
-    assert!(pattern.is_match(".DS_Store")?);
-    assert!(pattern.is_match("docs/.DS_Store")?);
-    assert!(pattern.is_match("/docs/.DS_Store")?);
-    assert!(!pattern.is_match("docs")?);
-    assert!(!pattern.is_match("/docs")?);
-    assert!(pattern.is_match("Thumbs.db")?);
-    assert!(pattern.is_match("docs/Thumbs.db")?);
     Ok(())
 }
 
@@ -155,9 +173,6 @@ pub struct Rule<'a> {
     /// when denotes a condition required to apply this rule's effects.
     pub when: Condition<'a>,
 
-    /// skip excludes archive entries.
-    pub skip: bool,
-
     /// mtime overrides entry modification timestamps (UNIX epoch).
     pub mtime: Option<u64>,
 
@@ -177,6 +192,61 @@ pub struct Rule<'a> {
     pub permissions: Option<u32>,
 }
 
+/// DEFAULT_RULES implements common archive entry behaviors,
+/// such as marking most extensionless paths as chmod +x.
+pub static DEFAULT_RULES: sync::LazyLock<Vec<Rule>> = sync::LazyLock::new(|| {
+    vec![
+        Rule {
+            when: Condition {
+                mode: None,
+                path: None,
+            },
+            mtime: None,
+            uid: None,
+            gid: None,
+            username: None,
+            groupname: None,
+            permissions: Some(0o755u32),
+        },
+        Rule {
+            when: Condition {
+                mode: Some(FileMode::File),
+                path: Some(&*COMMON_NONEXECUTABLE_FILE_PATH_PATTERN),
+            },
+            mtime: None,
+            uid: None,
+            gid: None,
+            username: None,
+            groupname: None,
+            permissions: Some(0o644u32),
+        },
+        Rule {
+            when: Condition {
+                mode: Some(FileMode::File),
+                path: Some(&*EXTENSIONED_FILE_PATH_PATTERN),
+            },
+            mtime: None,
+            uid: None,
+            gid: None,
+            username: None,
+            groupname: None,
+            permissions: Some(0o644u32),
+        },
+        Rule {
+            when: Condition {
+                mode: None,
+                path: Some(&*SYSTEM_V_INIT_LINEAGE_PATTERN),
+            },
+            mtime: None,
+            uid: None,
+            gid: None,
+            username: None,
+            groupname: None,
+            permissions: Some(0o755u32),
+        },
+    ]
+});
+
 impl Rule<'_> {
     /// is_match determines whether a rule relates to an entry.
     pub fn is_match(&self, filemode: &FileMode, pth: &str) -> Result<bool, io::Error> {
@@ -193,11 +263,6 @@ impl Rule<'_> {
         }
 
         Ok(true)
-    }
-
-    /// is_skip determines whether a rule skips an entry.
-    pub fn is_skip(&self, filemode: &FileMode, pth: &str) -> Result<bool, io::Error> {
-        self.is_match(filemode, pth).map(|e| e && self.skip)
     }
 
     /// apply modifies headers.
@@ -242,8 +307,11 @@ pub struct Chandler<'a> {
     /// cwd customizes the current working directory.
     pub cwd: Option<path::PathBuf>,
 
+    /// skip_path_pattern excludes file paths from archival,
+    pub skip_path_pattern: Option<&'a fancy_regex::Regex>,
+
     /// rules collects a table of permissions to apply to inbound files.
-    pub rules: Vec<Rule<'a>>,
+    pub rules: Option<&'a Vec<Rule<'a>>>,
 }
 
 /// permissions_to_u32 converts fs::Permissions objects to chmod integers.
@@ -270,73 +338,8 @@ impl Default for Chandler<'_> {
             verbose: false,
             header_type: HeaderType::UStar,
             cwd: None,
-            rules: vec![
-                Rule {
-                    when: Condition {
-                        mode: None,
-                        path: Some(&*FILE_MANAGER_CACHE_PATTERN),
-                    },
-                    skip: true,
-                    mtime: None,
-                    uid: None,
-                    gid: None,
-                    username: None,
-                    groupname: None,
-                    permissions: None,
-                },
-                Rule {
-                    when: Condition {
-                        mode: None,
-                        path: None,
-                    },
-                    skip: false,
-                    mtime: None,
-                    uid: None,
-                    gid: None,
-                    username: None,
-                    groupname: None,
-                    permissions: Some(0o755u32),
-                },
-                Rule {
-                    when: Condition {
-                        mode: Some(FileMode::File),
-                        path: Some(&*COMMON_NONEXECUTABLE_FILE_PATH_PATTERN),
-                    },
-                    skip: false,
-                    mtime: None,
-                    uid: None,
-                    gid: None,
-                    username: None,
-                    groupname: None,
-                    permissions: Some(0o644u32),
-                },
-                Rule {
-                    when: Condition {
-                        mode: Some(FileMode::File),
-                        path: Some(&*EXTENSIONED_FILE_PATH_PATTERN),
-                    },
-                    skip: false,
-                    mtime: None,
-                    uid: None,
-                    gid: None,
-                    username: None,
-                    groupname: None,
-                    permissions: Some(0o644u32),
-                },
-                Rule {
-                    when: Condition {
-                        mode: None,
-                        path: Some(&*SYSTEM_V_INIT_LINEAGE_PATTERN),
-                    },
-                    skip: false,
-                    mtime: None,
-                    uid: None,
-                    gid: None,
-                    username: None,
-                    groupname: None,
-                    permissions: Some(0o755u32),
-                },
-            ],
+            skip_path_pattern: Some(&*DEFAULT_SKIP_PATH_PATTERN),
+            rules: Some(&*DEFAULT_RULES),
         }
     }
 }
@@ -344,6 +347,12 @@ impl Default for Chandler<'_> {
 impl Chandler<'_> {
     /// archive generates a tarball.
     pub fn archive(&self, target: &path::Path, source: &path::Path) -> Result<(), io::Error> {
+        let skip_path_pattern: &fancy_regex::Regex = self
+            .skip_path_pattern
+            .unwrap_or(&*DEFAULT_SKIP_PATH_PATTERN);
+
+        let rules: &Vec<Rule> = self.rules.unwrap_or(&*DEFAULT_RULES);
+
         if let Some(cwd_pathbuf) = &self.cwd {
             env::set_current_dir(cwd_pathbuf.as_path())?;
         }
@@ -359,11 +368,28 @@ impl Chandler<'_> {
             let entry = entry?;
             let pth = entry.path();
             let pth_clean = pth.normalize();
-            let pth_str = pth_clean.to_str().ok_or_else(|| {
+            let pth_clean_str = pth_clean.to_str().ok_or_else(|| {
                 io::Error::other(format!("unable to render path {:?}", pth_clean))
             })?;
 
-            if pth_str.is_empty() || pth_str == "." {
+            if pth_clean_str.is_empty() || pth_clean_str == "." {
+                continue;
+            }
+
+            let pth_abs = pth.canonicalize()?;
+            let pth_abs_str = pth_abs.to_str().ok_or(io::Error::other(format!(
+                "unable to process path: {}",
+                pth_abs.display()
+            )))?;
+
+            if skip_path_pattern
+                .is_match(pth_abs_str)
+                .map_err(|e| io::Error::other(e.to_string()))?
+            {
+                if self.verbose {
+                    eprintln!("skipping {pth_clean_str}");
+                }
+
                 continue;
             }
 
@@ -402,7 +428,7 @@ impl Chandler<'_> {
                 FileMode::File
             } else {
                 return Err(io::Error::other(format!(
-                    "unsupported file type: {pth_str}"
+                    "unsupported file type: {pth_clean_str}"
                 )));
             };
 
@@ -414,19 +440,11 @@ impl Chandler<'_> {
             }
 
             if self.verbose {
-                eprintln!("a {pth_str}");
+                eprintln!("a {pth_clean_str}");
             }
 
-            if self
-                .rules
-                .iter()
-                .any(|e| e.is_skip(&filemode, pth_str).unwrap_or(false))
-            {
-                continue;
-            }
-
-            for rule in &self.rules {
-                if !rule.is_match(&filemode, pth_str)? {
+            for rule in rules {
+                if !rule.is_match(&filemode, pth_clean_str)? {
                     continue;
                 }
 
