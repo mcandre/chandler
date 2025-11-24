@@ -2,7 +2,6 @@
 
 extern crate fancy_regex;
 extern crate flate2;
-extern crate lazy_static;
 extern crate normalize_path;
 extern crate serde;
 extern crate tar;
@@ -11,30 +10,36 @@ extern crate walkdir;
 
 use self::serde::{Deserialize, Serialize};
 use normalize_path::NormalizePath;
+
 use std::env;
 use std::fs;
 use std::io;
 use std::path;
+use std::sync;
 use std::time;
 
-lazy_static::lazy_static! {
-    /// EXTENSIONED_FILE_PATH_PATTERN matches file paths with extensions,
-    /// including file extensions (.BAT, .EXE, and so on),
-    /// as well as file paths missing traditional basenames (.gitignore, .git, and so on).
-    pub static ref EXTENSIONED_FILE_PATH_PATTERN: fancy_regex::Regex = fancy_regex::Regex::new(r"^(.*/)*[^/]*\.[^/]*$").unwrap();
+/// EXTENSIONED_FILE_PATH_PATTERN matches file paths with extensions,
+/// including file extensions (.BAT, .EXE, and so on),
+/// as well as file paths missing traditional basenames (.gitignore, .git, and so on).
+pub static EXTENSIONED_FILE_PATH_PATTERN: sync::LazyLock<fancy_regex::Regex> =
+    sync::LazyLock::new(|| fancy_regex::Regex::new(r"^(.*/)*[^/]*\.[^/]*$").unwrap());
 
-    /// FILE_MANAGER_CACHE_PATTERN matches file paths with file manager metadata files.
-    pub static ref FILE_MANAGER_CACHE_PATTERN: fancy_regex::Regex = fancy_regex::Regex::new(r"^(.*/)?(\.DS_Store|Thumbs\.db)$").unwrap();
+/// FILE_MANAGER_CACHE_PATTERN matches file paths with file manager metadata files.
+pub static FILE_MANAGER_CACHE_PATTERN: sync::LazyLock<fancy_regex::Regex> =
+    sync::LazyLock::new(|| fancy_regex::Regex::new(r"^(.*/)?(\.DS_Store|Thumbs\.db)$").unwrap());
 
-    /// SYSTEM_V_INIT_LINEAGE_PATTERN matches file paths within SysVinit (etc/init.d) directory trees.
-    pub static ref SYSTEM_V_INIT_LINEAGE_PATTERN: fancy_regex::Regex = fancy_regex::Regex::new(r"^(.*/)?etc/init\.d(/.*)?$").unwrap();
+/// SYSTEM_V_INIT_LINEAGE_PATTERN matches file paths within SysVinit (etc/init.d) directory trees.
+pub static SYSTEM_V_INIT_LINEAGE_PATTERN: sync::LazyLock<fancy_regex::Regex> =
+    sync::LazyLock::new(|| fancy_regex::Regex::new(r"^(.*/)?etc/init\.d(/.*)?$").unwrap());
 
-    pub static ref COMMON_NONEXECUTABLE_FILE_PATH_PATTERN: fancy_regex::Regex = fancy_regex::Regex::new(r"(?i)^aliases|(ba|(m)?k|z)shrc|(bsd|gnu)?makefile|changelog|exports|fstab|license|readme|group|hosts|issue|mime|modules|profile|protocols|resolv|services|t(e)?mp|zshenv|((.*/)?etc/.+)$").unwrap();
-}
+pub static COMMON_NONEXECUTABLE_FILE_PATH_PATTERN: sync::LazyLock<fancy_regex::Regex> =
+    sync::LazyLock::new(|| {
+        fancy_regex::Regex::new(r"(?i)^aliases|(ba|(m)?k|z)shrc|(bsd|gnu)?makefile|changelog|exports|fstab|license|readme|group|hosts|issue|mime|modules|profile|protocols|resolv|services|t(e)?mp|zshenv|((.*/)?etc/.+)$").unwrap()
+    });
 
 #[test]
 fn test_extensioned_file_path_pattern() -> Result<(), fancy_regex::Error> {
-    let pattern = EXTENSIONED_FILE_PATH_PATTERN.clone();
+    let pattern = &*EXTENSIONED_FILE_PATH_PATTERN;
     assert!(!pattern.is_match("hello")?);
     assert!(!pattern.is_match("HELLO")?);
     assert!(!pattern.is_match("hello-1.0/docs")?);
@@ -52,7 +57,7 @@ fn test_extensioned_file_path_pattern() -> Result<(), fancy_regex::Error> {
 
 #[test]
 fn test_file_manager_cache_pattern() -> Result<(), fancy_regex::Error> {
-    let pattern = FILE_MANAGER_CACHE_PATTERN.clone();
+    let pattern = &*FILE_MANAGER_CACHE_PATTERN;
     assert!(pattern.is_match(".DS_Store")?);
     assert!(pattern.is_match("docs/.DS_Store")?);
     assert!(pattern.is_match("/docs/.DS_Store")?);
@@ -65,7 +70,7 @@ fn test_file_manager_cache_pattern() -> Result<(), fancy_regex::Error> {
 
 #[test]
 fn test_system_v_init_lineage_pattern() -> Result<(), fancy_regex::Error> {
-    let pattern = SYSTEM_V_INIT_LINEAGE_PATTERN.clone();
+    let pattern = &*SYSTEM_V_INIT_LINEAGE_PATTERN;
     assert!(pattern.is_match("/etc/init.d")?);
     assert!(pattern.is_match("etc/init.d")?);
     assert!(pattern.is_match("/etc/init.d/ssh")?);
@@ -77,7 +82,7 @@ fn test_system_v_init_lineage_pattern() -> Result<(), fancy_regex::Error> {
 
 #[test]
 fn test_common_nonexecutable_file_path_pattern() -> Result<(), fancy_regex::Error> {
-    let pattern = COMMON_NONEXECUTABLE_FILE_PATH_PATTERN.clone();
+    let pattern = &*COMMON_NONEXECUTABLE_FILE_PATH_PATTERN;
     assert!(pattern.is_match("bashrc")?);
     assert!(pattern.is_match("bsdmakefile")?);
     assert!(pattern.is_match("changelog")?);
@@ -136,19 +141,19 @@ pub enum FileMode {
 ///
 /// Fields with values present are intersected together (AND).
 #[derive(Debug)]
-pub struct Condition {
+pub struct Condition<'a> {
     /// mode denotes an FileMode.
     pub mode: Option<FileMode>,
 
     /// path denotes a file path.
-    pub path: Option<fancy_regex::Regex>,
+    pub path: Option<&'a fancy_regex::Regex>,
 }
 
 /// Rule applies given permissions for matching file patterns.
 #[derive(Debug)]
-pub struct Rule {
+pub struct Rule<'a> {
     /// when denotes a condition required to apply this rule's effects.
-    pub when: Condition,
+    pub when: Condition<'a>,
 
     /// skip excludes archive entries.
     pub skip: bool,
@@ -172,7 +177,7 @@ pub struct Rule {
     pub permissions: Option<u32>,
 }
 
-impl Rule {
+impl Rule<'_> {
     /// is_match determines whether a rule relates to an entry.
     pub fn is_match(&self, filemode: &FileMode, pth: &str) -> Result<bool, io::Error> {
         if let Some(when_mode) = &self.when.mode
@@ -227,7 +232,7 @@ impl Rule {
 
 /// Chandler assembles gunzipped tarballs (TGZ, TAR.GZ).
 #[derive(Debug)]
-pub struct Chandler {
+pub struct Chandler<'a> {
     /// verbose enables additional logging.
     pub verbose: bool,
 
@@ -238,7 +243,7 @@ pub struct Chandler {
     pub cwd: Option<path::PathBuf>,
 
     /// rules collects a table of permissions to apply to inbound files.
-    pub rules: Vec<Rule>,
+    pub rules: Vec<Rule<'a>>,
 }
 
 /// permissions_to_u32 converts fs::Permissions objects to chmod integers.
@@ -258,7 +263,7 @@ pub fn permissions_to_u32(permissions: fs::Permissions) -> u32 {
     }
 }
 
-impl Default for Chandler {
+impl Default for Chandler<'_> {
     /// default constructs an executable-aggressive Chandler configuration.
     fn default() -> Self {
         Chandler {
@@ -269,7 +274,7 @@ impl Default for Chandler {
                 Rule {
                     when: Condition {
                         mode: None,
-                        path: Some(FILE_MANAGER_CACHE_PATTERN.clone()),
+                        path: Some(&*FILE_MANAGER_CACHE_PATTERN),
                     },
                     skip: true,
                     mtime: None,
@@ -295,7 +300,7 @@ impl Default for Chandler {
                 Rule {
                     when: Condition {
                         mode: Some(FileMode::File),
-                        path: Some(COMMON_NONEXECUTABLE_FILE_PATH_PATTERN.clone()),
+                        path: Some(&*COMMON_NONEXECUTABLE_FILE_PATH_PATTERN),
                     },
                     skip: false,
                     mtime: None,
@@ -308,7 +313,7 @@ impl Default for Chandler {
                 Rule {
                     when: Condition {
                         mode: Some(FileMode::File),
-                        path: Some(EXTENSIONED_FILE_PATH_PATTERN.clone()),
+                        path: Some(&*EXTENSIONED_FILE_PATH_PATTERN),
                     },
                     skip: false,
                     mtime: None,
@@ -321,7 +326,7 @@ impl Default for Chandler {
                 Rule {
                     when: Condition {
                         mode: None,
-                        path: Some(SYSTEM_V_INIT_LINEAGE_PATTERN.clone()),
+                        path: Some(&*SYSTEM_V_INIT_LINEAGE_PATTERN),
                     },
                     skip: false,
                     mtime: None,
@@ -336,7 +341,7 @@ impl Default for Chandler {
     }
 }
 
-impl Chandler {
+impl Chandler<'_> {
     /// archive generates a tarball.
     pub fn archive(&self, target: &path::Path, source: &path::Path) -> Result<(), io::Error> {
         if let Some(cwd_pathbuf) = &self.cwd {
