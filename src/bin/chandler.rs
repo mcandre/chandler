@@ -28,6 +28,8 @@ fn main() {
     let arguments: Vec<String> = env::args().collect();
     let optmatches: getopts::Matches = opts.parse(&arguments[1..]).die(&usage);
 
+    let verbose = optmatches.opt_present("v");
+
     if optmatches.opt_present("h") {
         die!(0; usage);
     }
@@ -37,9 +39,22 @@ fn main() {
     }
 
     let mut ch = chandler::Chandler::default();
+    let configuration_filename = &chandler::CONFIGURATION_FILENAME;
 
-    if optmatches.opt_present("v") {
-        ch.verbose = true;
+    if path::Path::new(configuration_filename).exists() {
+        if verbose {
+            eprintln!("debug: loading configuration file: {configuration_filename}");
+        }
+
+        match chandler::Chandler::load() {
+            Err(e) => die!(1; "error: {}", e),
+            Ok(c) => ch = c,
+        }
+    }
+
+    if verbose {
+        ch.verbose = Some(true);
+        eprintln!("debug: configuration: {:?}", ch);
     }
 
     if optmatches.opt_present("C") {

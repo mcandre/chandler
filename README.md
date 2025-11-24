@@ -19,11 +19,7 @@ $ tree -p hello-1.0.0
 
 1 directory, 3 files
 
-$ chandler -czvf hello-1.0.0.tgz hello-1.0.0
-a hello-1.0.0
-a hello-1.0.0/README
-a hello-1.0.0/hello
-a hello-1.0.0/hello.bat
+$ chandler -czf hello-1.0.0.tgz hello-1.0.0
 archived entries to hello-1.0.0.tgz
 
 $ tar -tzvf hello-1.0.0.tgz
@@ -35,7 +31,9 @@ drwxr-xr-x  0 501    20          0 Nov 14 11:18 hello-1.0.0
 
 Above, chandler aligns target file metadata to industry standards, repairing glitches in source file metadata.
 
-See `chandler -h` for more options.
+See [CONFIGURATION.md](CONFIGURATION.md) for configuration file options.
+
+Run `chandler -h` for CLI options.
 
 # ABOUT
 

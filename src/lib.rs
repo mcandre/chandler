@@ -8,8 +8,8 @@ extern crate tar;
 extern crate toml;
 extern crate walkdir;
 
-use self::serde::{Deserialize, Serialize};
 use normalize_path::NormalizePath;
+use serde::{Deserialize, Serialize};
 
 use std::env;
 use std::fs;
@@ -18,31 +18,36 @@ use std::path;
 use std::sync;
 use std::time;
 
-/// COMMON_SKIP_PATHS collects file paths commonly excluded from clean archives,
+/// CONFIGURATION_FILENAME denotes the file path to an optional TOML configuration file,
+/// relative to the current working directory.
+pub static CONFIGURATION_FILENAME: &str = "chandler.toml";
+
+/// DEFAULT_SKIP_PATHS collects file paths commonly excluded from clean archives,
 /// such as file manager metadata files.
-pub static COMMON_SKIP_PATHS: sync::LazyLock<Vec<&str>> =
-    sync::LazyLock::new(|| vec![".DS_Store", "Thumbs.db"]);
+pub static DEFAULT_SKIP_PATHS: sync::LazyLock<Vec<String>> = sync::LazyLock::new(|| {
+    [".DS_Store", "Thumbs.db"]
+        .iter()
+        .map(|e| e.to_string())
+        .collect::<Vec<String>>()
+});
 
 /// SKIP_PATH_PATTERN_TEMPLATE combines with `skip_paths` and a pipe (|) delimited path string to form path exclusion patterns.
-pub static SKIP_PATH_PATTERN_TEMPLATE: &str = r"^(.*/)?({skip_paths})$";
+pub static SKIP_PATH_PATTERN_TEMPLATE: sync::LazyLock<String> =
+    sync::LazyLock::new(|| r"^(.*/)?({skip_paths})$".to_string());
 
 /// generate_skip_path_pattern converts a collection of skip paths to a regex.
 #[allow(clippy::result_large_err)]
 pub fn generate_skip_path_pattern(
-    skip_paths: &[&str],
+    skip_paths: &[String],
 ) -> Result<fancy_regex::Regex, fancy_regex::Error> {
     fancy_regex::Regex::new(
         &SKIP_PATH_PATTERN_TEMPLATE.replace("{skip_paths}", &skip_paths.join("|")),
     )
 }
 
-/// DEFAULT_SKIP_PATH_PATTERN excludes COMMON_SKIP_FILES.
-pub static DEFAULT_SKIP_PATH_PATTERN: sync::LazyLock<fancy_regex::Regex> =
-    sync::LazyLock::new(|| generate_skip_path_pattern(&COMMON_SKIP_PATHS).unwrap());
-
 #[test]
-fn test_default_skip_path_pattern() -> Result<(), fancy_regex::Error> {
-    let pattern = &*DEFAULT_SKIP_PATH_PATTERN;
+fn test_default_skip_paths() -> Result<(), fancy_regex::Error> {
+    let pattern = generate_skip_path_pattern(&DEFAULT_SKIP_PATHS)?;
     assert!(pattern.is_match(".DS_Store")?);
     assert!(pattern.is_match("docs/.DS_Store")?);
     assert!(pattern.is_match("/docs/.DS_Store")?);
@@ -53,54 +58,13 @@ fn test_default_skip_path_pattern() -> Result<(), fancy_regex::Error> {
     Ok(())
 }
 
-/// EXTENSIONED_FILE_PATH_PATTERN matches file paths with extensions,
-/// including file extensions (.BAT, .EXE, and so on),
-/// as well as file paths missing traditional basenames (.gitignore, .git, and so on).
-pub static EXTENSIONED_FILE_PATH_PATTERN: sync::LazyLock<fancy_regex::Regex> =
-    sync::LazyLock::new(|| fancy_regex::Regex::new(r"^(.*/)*[^/]*\.[^/]*$").unwrap());
-
-/// SYSTEM_V_INIT_LINEAGE_PATTERN matches file paths within SysVinit (etc/init.d) directory trees.
-pub static SYSTEM_V_INIT_LINEAGE_PATTERN: sync::LazyLock<fancy_regex::Regex> =
-    sync::LazyLock::new(|| fancy_regex::Regex::new(r"^(.*/)?etc/init\.d(/.*)?$").unwrap());
-
-pub static COMMON_NONEXECUTABLE_FILE_PATH_PATTERN: sync::LazyLock<fancy_regex::Regex> =
-    sync::LazyLock::new(|| {
-        fancy_regex::Regex::new(r"(?i)^aliases|(ba|(m)?k|z)shrc|(bsd|gnu)?makefile|changelog|exports|fstab|license|readme|group|hosts|issue|mime|modules|profile|protocols|resolv|services|t(e)?mp|zshenv|((.*/)?etc/.+)$").unwrap()
-    });
+/// DEFAULT_NONEXECUTABLE_FILE_PATHS matches UNIX and software development file paths
+/// which do not typically use executable permissions.
+pub static DEFAULT_NONEXECUTABLE_FILE_PATHS: &str = "(?i)^aliases|(ba|(m)?k|z)shrc|(bsd|gnu)?makefile|changelog|exports|fstab|license|readme|group|hosts|issue|mime|modules|profile|protocols|resolv|services|t(e)?mp|zshenv|((.*/)?etc/.+)$";
 
 #[test]
-fn test_extensioned_file_path_pattern() -> Result<(), fancy_regex::Error> {
-    let pattern = &*EXTENSIONED_FILE_PATH_PATTERN;
-    assert!(!pattern.is_match("hello")?);
-    assert!(!pattern.is_match("HELLO")?);
-    assert!(!pattern.is_match("hello-1.0/docs")?);
-    assert!(pattern.is_match("HELLO.BAT")?);
-    assert!(pattern.is_match("hello.bat")?);
-    assert!(pattern.is_match("applications/hello.bat")?);
-    assert!(pattern.is_match("HELLO.EXE")?);
-    assert!(pattern.is_match("hello.exe")?);
-    assert!(pattern.is_match("applications/hello.exe")?);
-    assert!(pattern.is_match(".gitignore")?);
-    assert!(pattern.is_match("DEGENERATE.")?);
-    assert!(pattern.is_match("degenerate.")?);
-    Ok(())
-}
-
-#[test]
-fn test_system_v_init_lineage_pattern() -> Result<(), fancy_regex::Error> {
-    let pattern = &*SYSTEM_V_INIT_LINEAGE_PATTERN;
-    assert!(pattern.is_match("/etc/init.d")?);
-    assert!(pattern.is_match("etc/init.d")?);
-    assert!(pattern.is_match("/etc/init.d/ssh")?);
-    assert!(pattern.is_match("etc/init.d/ssh")?);
-    assert!(!pattern.is_match("/root/.ssh")?);
-    assert!(!pattern.is_match("root/.ssh")?);
-    Ok(())
-}
-
-#[test]
-fn test_common_nonexecutable_file_path_pattern() -> Result<(), fancy_regex::Error> {
-    let pattern = &*COMMON_NONEXECUTABLE_FILE_PATH_PATTERN;
+fn test_default_nonexecutable_file_paths() -> Result<(), fancy_regex::Error> {
+    let pattern = fancy_regex::Regex::new(DEFAULT_NONEXECUTABLE_FILE_PATHS)?;
     assert!(pattern.is_match("bashrc")?);
     assert!(pattern.is_match("bsdmakefile")?);
     assert!(pattern.is_match("changelog")?);
@@ -132,21 +96,64 @@ fn test_common_nonexecutable_file_path_pattern() -> Result<(), fancy_regex::Erro
     Ok(())
 }
 
-/// HeaderType models a tarball header type.
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
-pub enum HeaderType {
-    /// Old models a vintage tar v7 header.
-    Old,
+/// EXTENSIONED_FILE_PATHS matches file paths with extensions,
+/// including file extensions (.BAT, .EXE, and so on),
+/// as well as file paths missing traditional basenames (.gitignore, .git, and so on).
+pub static EXTENSIONED_FILE_PATHS: &str = r"^(.*/)*[^/]*\.[^/]*$";
 
-    /// Gnu models a classical GNU tar header.
-    Gnu,
+#[test]
+fn test_extensioned_file_paths() -> Result<(), fancy_regex::Error> {
+    let pattern = fancy_regex::Regex::new(EXTENSIONED_FILE_PATHS)?;
+    assert!(!pattern.is_match("hello")?);
+    assert!(!pattern.is_match("HELLO")?);
+    assert!(!pattern.is_match("hello-1.0/docs")?);
+    assert!(pattern.is_match("HELLO.BAT")?);
+    assert!(pattern.is_match("hello.bat")?);
+    assert!(pattern.is_match("applications/hello.bat")?);
+    assert!(pattern.is_match("HELLO.EXE")?);
+    assert!(pattern.is_match("hello.exe")?);
+    assert!(pattern.is_match("applications/hello.exe")?);
+    assert!(pattern.is_match(".gitignore")?);
+    assert!(pattern.is_match("DEGENERATE.")?);
+    assert!(pattern.is_match("degenerate.")?);
+    Ok(())
+}
 
-    /// UStar models a POSIX UStar/PAX header.
-    UStar,
+/// SYSTEM_V_INIT_PATHS matches file paths within legacy SysVinit (etc/init.d) directory trees.
+pub static SYSTEM_V_INIT_PATHS: &str = r"^(.*/)?etc/init\.d(/.*)?$";
+
+#[test]
+fn test_system_v_init_paths() -> Result<(), fancy_regex::Error> {
+    let pattern = fancy_regex::Regex::new(SYSTEM_V_INIT_PATHS)?;
+    assert!(pattern.is_match("/etc/init.d")?);
+    assert!(pattern.is_match("etc/init.d")?);
+    assert!(pattern.is_match("/etc/init.d/ssh")?);
+    assert!(pattern.is_match("etc/init.d/ssh")?);
+    assert!(!pattern.is_match("/root/.ssh")?);
+    assert!(!pattern.is_match("root/.ssh")?);
+    Ok(())
 }
 
 /// HeaderType models a tarball header type.
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
+#[serde(tag = "type")]
+pub enum HeaderType {
+    /// UStar models a modern, POSIX compliant UStar/PAX header.
+    UStar,
+
+    /// Gnu models classical GNU tar headers.
+    Gnu,
+
+    /// TarV7 models vintage headers.
+    TarV7,
+}
+
+/// DEFAULT_HEADER_TYPE is UStar.
+pub static DEFAULT_HEADER_TYPE: HeaderType = HeaderType::UStar;
+
+/// HeaderType models a tarball header type.
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
+#[serde(tag = "type")]
 pub enum FileMode {
     /// Directory models a folder.
     Directory,
@@ -158,20 +165,22 @@ pub enum FileMode {
 /// Condition models an archive entry state.
 ///
 /// Fields with values present are intersected together (AND).
-#[derive(Debug)]
-pub struct Condition<'a> {
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Condition {
     /// mode denotes an FileMode.
     pub mode: Option<FileMode>,
 
-    /// path denotes a file path.
-    pub path: Option<&'a fancy_regex::Regex>,
+    /// paths matches file paths.
+    ///
+    /// Syntax is Rust [regex](https://crates.io/crates/regex).
+    pub paths: Option<String>,
 }
 
 /// Rule applies given permissions for matching file patterns.
-#[derive(Debug)]
-pub struct Rule<'a> {
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Rule {
     /// when denotes a condition required to apply this rule's effects.
-    pub when: Condition<'a>,
+    pub when: Option<Condition>,
 
     /// mtime overrides entry modification timestamps (UNIX epoch).
     pub mtime: Option<u64>,
@@ -197,10 +206,7 @@ pub struct Rule<'a> {
 pub static DEFAULT_RULES: sync::LazyLock<Vec<Rule>> = sync::LazyLock::new(|| {
     vec![
         Rule {
-            when: Condition {
-                mode: None,
-                path: None,
-            },
+            when: None,
             mtime: None,
             uid: None,
             gid: None,
@@ -209,10 +215,10 @@ pub static DEFAULT_RULES: sync::LazyLock<Vec<Rule>> = sync::LazyLock::new(|| {
             permissions: Some(0o755u32),
         },
         Rule {
-            when: Condition {
+            when: Some(Condition {
                 mode: Some(FileMode::File),
-                path: Some(&*COMMON_NONEXECUTABLE_FILE_PATH_PATTERN),
-            },
+                paths: Some(DEFAULT_NONEXECUTABLE_FILE_PATHS.to_string()),
+            }),
             mtime: None,
             uid: None,
             gid: None,
@@ -221,10 +227,10 @@ pub static DEFAULT_RULES: sync::LazyLock<Vec<Rule>> = sync::LazyLock::new(|| {
             permissions: Some(0o644u32),
         },
         Rule {
-            when: Condition {
+            when: Some(Condition {
                 mode: Some(FileMode::File),
-                path: Some(&*EXTENSIONED_FILE_PATH_PATTERN),
-            },
+                paths: Some(EXTENSIONED_FILE_PATHS.to_string()),
+            }),
             mtime: None,
             uid: None,
             gid: None,
@@ -233,10 +239,10 @@ pub static DEFAULT_RULES: sync::LazyLock<Vec<Rule>> = sync::LazyLock::new(|| {
             permissions: Some(0o644u32),
         },
         Rule {
-            when: Condition {
+            when: Some(Condition {
                 mode: None,
-                path: Some(&*SYSTEM_V_INIT_LINEAGE_PATTERN),
-            },
+                paths: Some(SYSTEM_V_INIT_PATHS.to_string()),
+            }),
             mtime: None,
             uid: None,
             gid: None,
@@ -247,19 +253,30 @@ pub static DEFAULT_RULES: sync::LazyLock<Vec<Rule>> = sync::LazyLock::new(|| {
     ]
 });
 
-impl Rule<'_> {
+impl Rule {
     /// is_match determines whether a rule relates to an entry.
     pub fn is_match(&self, filemode: &FileMode, pth: &str) -> Result<bool, io::Error> {
-        if let Some(when_mode) = &self.when.mode
-            && when_mode != filemode
+        let condition_option = &self.when;
+
+        if condition_option.is_none() {
+            return Ok(true);
+        }
+
+        let condition = condition_option.as_ref().unwrap();
+
+        if let Some(when_mode) = condition.mode
+            && when_mode != *filemode
         {
             return Ok(false);
         }
 
-        if let Some(when_path) = &self.when.path
-            && !when_path.is_match(pth).map_err(io::Error::other)?
-        {
-            return Ok(false);
+        if let Some(when_paths) = &condition.paths {
+            let pattern =
+                fancy_regex::Regex::new(when_paths).map_err(|e| io::Error::other(e.to_string()))?;
+
+            if !pattern.is_match(pth).map_err(io::Error::other)? {
+                return Ok(false);
+            }
         }
 
         Ok(true)
@@ -296,22 +313,24 @@ impl Rule<'_> {
 }
 
 /// Chandler assembles gunzipped tarballs (TGZ, TAR.GZ).
-#[derive(Debug)]
-pub struct Chandler<'a> {
+#[derive(Debug, Default, Deserialize, Serialize)]
+pub struct Chandler {
     /// verbose enables additional logging.
-    pub verbose: bool,
+    pub verbose: Option<bool>,
 
-    /// header_type denotes a tape archive format.
-    pub header_type: HeaderType,
+    /// header denotes a tape archive format.
+    pub header: Option<HeaderType>,
 
     /// cwd customizes the current working directory.
     pub cwd: Option<path::PathBuf>,
 
-    /// skip_path_pattern excludes file paths from archival,
-    pub skip_path_pattern: Option<&'a fancy_regex::Regex>,
+    /// skip_paths collects file path patterns to exclude from archival,
+    ///
+    /// Syntax is Rust [regex](https://crates.io/crates/regex).
+    pub skip_paths: Option<Vec<String>>,
 
-    /// rules collects a table of permissions to apply to inbound files.
-    pub rules: Option<&'a Vec<Rule<'a>>>,
+    /// rules collects a sequence of rules to apply to inbound files.
+    pub rules: Option<Vec<Rule>>,
 }
 
 /// permissions_to_u32 converts fs::Permissions objects to chmod integers.
@@ -331,27 +350,23 @@ pub fn permissions_to_u32(permissions: fs::Permissions) -> u32 {
     }
 }
 
-impl Default for Chandler<'_> {
-    /// default constructs an executable-aggressive Chandler configuration.
-    fn default() -> Self {
-        Chandler {
-            verbose: false,
-            header_type: HeaderType::UStar,
-            cwd: None,
-            skip_path_pattern: Some(&*DEFAULT_SKIP_PATH_PATTERN),
-            rules: Some(&*DEFAULT_RULES),
-        }
+impl Chandler {
+    /// load generates a Chandler.
+    pub fn load() -> Result<Self, io::Error> {
+        let pth = CONFIGURATION_FILENAME;
+        let toml_string = fs::read_to_string(pth)
+            .map_err(|_| io::Error::other(format!("unable to read file: {pth}")))?;
+        let chandler: Chandler =
+            toml::from_str(&toml_string).map_err(|e| io::Error::other(e.to_string()))?;
+        Ok(chandler)
     }
-}
 
-impl Chandler<'_> {
     /// archive generates a tarball.
     pub fn archive(&self, target: &path::Path, source: &path::Path) -> Result<(), io::Error> {
-        let skip_path_pattern: &fancy_regex::Regex = self
-            .skip_path_pattern
-            .unwrap_or(&*DEFAULT_SKIP_PATH_PATTERN);
-
-        let rules: &Vec<Rule> = self.rules.unwrap_or(&*DEFAULT_RULES);
+        let skip_path_pattern: fancy_regex::Regex =
+            generate_skip_path_pattern(self.skip_paths.as_ref().unwrap_or(&DEFAULT_SKIP_PATHS))
+                .map_err(io::Error::other)?;
+        let rules: &Vec<Rule> = self.rules.as_ref().unwrap_or(&DEFAULT_RULES);
 
         if let Some(cwd_pathbuf) = &self.cwd {
             env::set_current_dir(cwd_pathbuf.as_path())?;
@@ -386,7 +401,7 @@ impl Chandler<'_> {
                 .is_match(pth_abs_str)
                 .map_err(|e| io::Error::other(e.to_string()))?
             {
-                if self.verbose {
+                if let Some(true) = self.verbose {
                     eprintln!("skipping {pth_clean_str}");
                 }
 
@@ -394,10 +409,10 @@ impl Chandler<'_> {
             }
 
             let metadata = entry.metadata()?;
-            let mut header = match self.header_type {
-                HeaderType::Old => tar::Header::new_old(),
-                HeaderType::Gnu => tar::Header::new_gnu(),
-                HeaderType::UStar => tar::Header::new_ustar(),
+            let mut header = match self.header {
+                Some(HeaderType::Gnu) => tar::Header::new_gnu(),
+                Some(HeaderType::TarV7) => tar::Header::new_old(),
+                _ => tar::Header::new_ustar(),
             };
 
             header.set_path(&pth_clean)?;
@@ -439,7 +454,7 @@ impl Chandler<'_> {
                 header.set_size(metadata.len());
             }
 
-            if self.verbose {
+            if let Some(true) = self.verbose {
                 eprintln!("a {pth_clean_str}");
             }
 
