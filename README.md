@@ -41,28 +41,6 @@ chandler automates industry norms for file permissions, file exclusions, lexicog
 
 Metadata is normalized as each entry enters the archive, regardless of the original file metadata. This smooths out common SDLC workflows, especially for multi-platform engineering teams.
 
-# DEFAULT RULES
-
-chandler's default rule set is tuned for application release archives, especially native UNIX executables, Windows executables, and/or interpreted scripts. While also allowing for nonexecutable assets.
-
-* **Assume executable permissions for child paths without a period (`.`) by default**
-* Drop executable permissions for common nonexecutable files
-* Skip common junk files
-
-Extensionless files are generally assumed to be UNIX executables. These automatically receive `chmod 0755` permissions suitable for running commands.
-
-Executables includes compilied binary programs (`hello`), interpreted text scripts (`configure`), and legacy SysVinit scripts (`etc/init.d/sshd`).
-
-Executables often includes directories, as these permissions are requisite in order for relevant users to perform directory traversal.
-
-Common extensionless basenames are recognized as *nonexecutable* (`LICENSE`, `README`, `makefile`, etc.)
-
-Child paths with period (`.`) are assumed to be nonexecutable assets, receiving `chmod 0644` permissions.
-
-This includes Windows centric programs (`hello.bat`, `*.com`, `*.exe`, etc.), scripts that include a file extension (`*.bat`, `*.cmd`, `*.js`, `*.lua`, `*.pl`, `*.py`, `*.rb`, `*.sh`, etc.), as well as documents (`*.json`, `*.md`, `*.toml`, `*.txt`, `*.xml`, `*.yaml`, `*.yml`, etc.), archives (`*.jar`, `*.tar`, `*.tar.gz`, `*.tgz`, `*.zip`, etc.), and most descendents of the UNIX configuration directory `etc`.
-
-`.DS_Store` and `Thumbs.db` are skipped.
-
 # CRATE
 
 https://crates.io/crates/chandler
