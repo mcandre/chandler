@@ -31,9 +31,9 @@ pub static DEFAULT_SKIP_PATHS: sync::LazyLock<Vec<String>> = sync::LazyLock::new
         .collect::<Vec<String>>()
 });
 
-/// SKIP_PATH_PATTERN_TEMPLATE combines with `skip_paths` and a pipe (|) delimited path string to form path exclusion patterns.
-pub static SKIP_PATH_PATTERN_TEMPLATE: sync::LazyLock<String> =
-    sync::LazyLock::new(|| r"^(.*/)?({skip_paths})$".to_string());
+/// SKIP_PATH_PATTERN_REPLACE_TEMPLATE combines with `skip_paths` and a pipe (|) delimited path string to form path exclusion patterns.
+pub static SKIP_PATH_PATTERN_REPLACE_TEMPLATE: sync::LazyLock<String> =
+    sync::LazyLock::new(|| r"^(.*/)?(skip_paths)$".to_string());
 
 /// generate_skip_path_pattern converts a collection of skip paths to a regex.
 #[allow(clippy::result_large_err)]
@@ -41,7 +41,7 @@ pub fn generate_skip_path_pattern(
     skip_paths: &[String],
 ) -> Result<fancy_regex::Regex, fancy_regex::Error> {
     fancy_regex::Regex::new(
-        &SKIP_PATH_PATTERN_TEMPLATE.replace("{skip_paths}", &skip_paths.join("|")),
+        &SKIP_PATH_PATTERN_REPLACE_TEMPLATE.replace("skip_paths", &skip_paths.join("|")),
     )
 }
 
