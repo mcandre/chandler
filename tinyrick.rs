@@ -4,26 +4,6 @@ extern crate chandler;
 extern crate tinyrick;
 extern crate tinyrick_extras;
 
-use std::path;
-
-/// archive bundles executables.
-fn archive() {
-    let port_basename_str = &banner();
-    let archive_basename = &format!("{}.tgz", port_basename_str);
-    let mut ch = chandler::Chandler::default();
-    let cwd = path::Path::new(".crit").join("bin");
-    ch.cwd = Some(cwd.clone());
-    ch.archive(
-        path::Path::new(archive_basename),
-        path::Path::new(port_basename_str),
-    )
-    .unwrap();
-    eprintln!(
-        "archived entries to {0}",
-        cwd.join(archive_basename).display()
-    );
-}
-
 /// Security audit
 fn audit() {
     tinyrick_extras::cargo_audit();
@@ -94,8 +74,9 @@ fn install() {
 
 /// Prepare cross-platform release media.
 fn port() {
-    tinyrick_extras::crit(vec!["-b".to_string(), banner()]);
-    tinyrick::deps(archive);
+    let b = &banner();
+    tinyrick_extras::crit(&vec!["-b", b]);
+    tinyrick_extras::chandler(".crit/bin", b);
 }
 
 /// Publish to crate repository
@@ -124,7 +105,6 @@ fn main() {
 
     tinyrick::wubba_lubba_dub_dub!(
         build;
-        archive,
         audit,
         cargo_check,
         clean,
