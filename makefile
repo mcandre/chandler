@@ -19,8 +19,7 @@
 	publish \
 	rustfmt \
 	test \
-	uninstall \
-	unmake
+	uninstall
 .IGNORE: \
 	clean \
 	clean-archive \
@@ -77,8 +76,7 @@ lint: \
 	cargo-check \
 	clippy \
 	doc \
-	rustfmt \
-	unmake
+	rustfmt
 
 port: crit
 	chandler -C .crit/bin -czf "$(BANNER).tgz" "$(BANNER)"
@@ -94,7 +92,3 @@ test:
 
 uninstall:
 	cargo uninstall chandler
-
-unmake:
-	unmake .
-	unmake -n .

@@ -72,7 +72,7 @@ $ cargo install --force --path .
 
 # CONTRIBUTING
 
-For more details on developing unmake itself, see [DEVELOPMENT.md](DEVELOPMENT.md).
+For more details on developing chandler itself, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 # LICENSE
 
