@@ -1,6 +1,7 @@
 # BUILDTIME REQUIREMENTS
 
 * [Docker](https://www.docker.com/) 20.10.12+
+* POSIX compliant [findutils](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/find.html)
 * POSIX compliant [make](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/make.html)
 * [rustup](https://rustup.rs/)
 * [Rust](https://www.rust-lang.org/en-US/)
