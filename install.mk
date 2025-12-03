@@ -7,7 +7,7 @@ all:
 		cargo-audit \
 		cargo-cache \
 		cargo-edit \
-		crit@0.0.10
+		crit@0.0.11
 	cargo install --force \
 		cross \
 			--git https://github.com/cross-rs/cross \
