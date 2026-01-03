@@ -27,7 +27,7 @@
 	clean-example \
 	clean-ports
 
-VERSION=0.0.5
+VERSION=0.0.6
 BANNER=chandler-$(VERSION)
 
 all: build
