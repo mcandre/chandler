@@ -1,5 +1,7 @@
 # chandler: tar normalizer
 
+[![Donate](https://img.shields.io/badge/GUMROAD-36a9ae?style=flat&logo=gumroad&logoColor=white)](https://mcandre.gumroad.com/)
+
 ![chandler](chandler.png)
 
 # SUMMARY

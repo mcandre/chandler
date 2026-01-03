@@ -13,6 +13,12 @@
 	clippy \
 	crit \
 	doc \
+	docker-build \
+	docker-build-alpine \
+	docker-build-debian \
+	docker-push \
+	docker-push-alpine \
+	docker-push-debian \
 	install \
 	lint \
 	port \
@@ -64,11 +70,37 @@ clean-ports:
 clippy:
 	cargo clippy
 
+CRIT_EXCLUSIONS=android|cuda|emscripten|fortanix|fuchsia|gnullvm|gnux32|ios|loongarch|msvc|none-eabi|ohos|pc-solaris|powerpc64le-unknown-linux-musl|redox|riscv64gc-unknown-linux-musl|sparcv9-sun-solaris|uefi|unknown-none|wasm|i686-pc-windows-gnu
+
 crit:
-	crit -b $(BANNER)
+	crit -b $(BANNER) -e "$(CRIT_EXCLUSIONS)"
 
 doc:
 	cargo doc
+
+docker-build: docker-build-alpine docker-build-debian
+
+docker-build-alpine:
+	tuggy -c tuggy.alpine.toml -t mcandre/chandler:$(VERSION)-alpine3.23 --load
+	tuggy -c tuggy.alpine.toml -t mcandre/chandler:alpine3.23 --load
+
+docker-build-debian:
+	tuggy -c tuggy.debian.toml -t mcandre/chandler:$(VERSION)-trixie --load
+	tuggy -c tuggy.debian.toml -t mcandre/chandler:trixie --load
+	tuggy -c tuggy.debian.toml -t mcandre/chandler:$(VERSION) --load
+	tuggy -c tuggy.debian.toml -t mcandre/chandler --load
+
+docker-push: docker-push-alpine docker-push-debian
+
+docker-push-alpine:
+	tuggy -c tuggy.alpine.toml -t mcandre/chandler:$(VERSION)-alpine3.23 --push
+	tuggy -c tuggy.alpine.toml -t mcandre/chandler:alpine3.23 --push
+
+docker-push-debian:
+	tuggy -c tuggy.debian.toml -t mcandre/chandler:$(VERSION)-trixie --push
+	tuggy -c tuggy.debian.toml -t mcandre/chandler:trixie --push
+	tuggy -c tuggy.debian.toml -t mcandre/chandler:$(VERSION) --push
+	tuggy -c tuggy.debian.toml -t mcandre/chandler --push
 
 install:
 	cargo install --force --path .
