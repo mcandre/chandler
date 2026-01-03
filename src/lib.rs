@@ -36,17 +36,17 @@ pub static SKIP_PATH_PATTERN_REPLACE_TEMPLATE: sync::LazyLock<String> =
     sync::LazyLock::new(|| r"^(.*/)?(skip_paths)$".to_string());
 
 /// generate_skip_path_pattern converts a collection of skip paths to a regex.
-#[allow(clippy::result_large_err)]
 pub fn generate_skip_path_pattern(
     skip_paths: &[String],
-) -> Result<fancy_regex::Regex, fancy_regex::Error> {
+) -> Result<fancy_regex::Regex, Box<fancy_regex::Error>> {
     fancy_regex::Regex::new(
         &SKIP_PATH_PATTERN_REPLACE_TEMPLATE.replace("skip_paths", &skip_paths.join("|")),
     )
+    .map_err(Box::new)
 }
 
 #[test]
-fn test_default_skip_paths() -> Result<(), fancy_regex::Error> {
+fn test_default_skip_paths() -> Result<(), Box<fancy_regex::Error>> {
     let pattern = generate_skip_path_pattern(&DEFAULT_SKIP_PATHS)?;
     assert!(pattern.is_match(".DS_Store")?);
     assert!(pattern.is_match("docs/.DS_Store")?);
