@@ -87,6 +87,6 @@ BSD-2-Clause
 * [linters](https://github.com/mcandre/linters)
 * [tinyrick](https://github.com/mcandre/tinyrick)
 * [todolint](https://github.com/mcandre/todolint)
-* [tug](https://github.com/mcandre/tug)
+* [tuggy](https://github.com/mcandre/tuggy)
 
 📼
