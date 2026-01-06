@@ -14,11 +14,8 @@
 	crit \
 	doc \
 	docker-build \
-	docker-build-alpine \
-	docker-build-debian \
 	docker-push \
-	docker-push-alpine \
-	docker-push-debian \
+	docker-test \
 	install \
 	lint \
 	port \
@@ -78,35 +75,14 @@ crit:
 doc:
 	cargo doc
 
-docker-build: docker-build-alpine docker-build-debian
+docker-build:
+	tuggy -t n4jm4/chandler:$(VERSION) --load
 
-docker-build-alpine:
-	tuggy \
-		-c tuggy.alpine.toml \
-		-t "n4jm4/chandler:$(VERSION)-alpine3.23" \
-		--load
+docker-push:
+	tuggy -t n4jm4/chandler:$(VERSION) -a n4jm4/chandler --push
 
-docker-build-debian:
-	tuggy \
-		-c tuggy.debian.toml \
-		-t "n4jm4/chandler:$(VERSION)-trixie" \
-		--load
-
-docker-push: docker-push-alpine docker-push-debian
-
-docker-push-alpine:
-	tuggy \
-		-c tuggy.alpine.toml \
-		-t "n4jm4/chandler:$(VERSION)-alpine3.23" \
-		-a "n4jm4/chandler:$(VERSION)-alpine,n4jm4/chandler:alpine3.23,n4jm4/chandler:alpine" \
-		--push
-
-docker-push-debian:
-	tuggy \
-		-c tuggy.debian.toml \
-		-t "n4jm4/chandler:$(VERSION)-trixie" \
-		-a "n4jm4/chandler:trixie,n4jm4/chandler:$(VERSION),n4jm4/chandler" \
-		--push
+docker-test:
+	tuggy -t n4jm4/chandler:test --load --push
 
 install:
 	cargo install --force --path .
