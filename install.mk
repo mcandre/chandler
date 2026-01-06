@@ -7,7 +7,7 @@ all:
 		cargo-audit \
 		cargo-cache \
 		cargo-edit \
-		crit@0.0.12 \
+		crit@0.0.14 \
 		tuggy@0.0.28
 	cargo install --force \
 		cross \
