@@ -1,10 +1,10 @@
-tuggy.*.toml
 *.md
 *.png
 .editorconfig
 .rubberstamp
-example/
 install.mk
+tuggy.toml
+example/
 .crit/
 .github/
 .git/
