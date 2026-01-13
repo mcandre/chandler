@@ -67,15 +67,17 @@ https://github.com/mcandre/chandler/releases
 
 ## Docker
 
-```console
-$ docker pull n4jm4/chandler
+```sh
+docker pull n4jm4/chandler
 ```
 
-## Source
+## Compile from Source
 
-```console
-$ cargo install --force --path .
+```sh
+cargo install --force --path .
 ```
+
+For more details on developing chandler itself, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 # RUNTIME REQUIREMENTS
 
@@ -87,10 +89,6 @@ $ cargo install --force --path .
 * case sensitive or case aware file systems (e.g. ext4, exFAT, APFS, NTFS)
 * [GNU](https://www.gnu.org/software/tar/)/[BSD](https://man.freebsd.org/cgi/man.cgi?tar(1))/[Windows](https://ss64.com/nt/tar.html) tar with gzip support
 * [tree](https://en.wikipedia.org/wiki/Tree_(command))
-
-# CONTRIBUTING
-
-For more details on developing chandler itself, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 # LICENSE
 
