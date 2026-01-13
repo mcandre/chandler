@@ -51,15 +51,19 @@ https://crates.io/crates/chandler
 
 https://docs.rs/chandler/latest/chandler/
 
-# DOCKER HUB
+# INSTALL
 
-https://hub.docker.com/r/n4jm4/chandler
-
-# DOWNLOAD
+## Precompiled Binaries
 
 https://github.com/mcandre/chandler/releases
 
-# INSTALL FROM SOURCE
+## Docker
+
+```console
+$ docker pull n4jm4/chandler
+```
+
+## Source
 
 ```console
 $ cargo install --force --path .
