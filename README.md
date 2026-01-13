@@ -53,9 +53,17 @@ https://docs.rs/chandler/latest/chandler/
 
 # INSTALL
 
+We support several installation methods.
+
 ## Precompiled Binaries
 
 https://github.com/mcandre/chandler/releases
+
+1. Download release archive.
+2. Extract archive.
+3. Select executables for your target platform.
+4. Copy executabless to a convenient location, e.g. `$HOME/bin`.
+5. Ensure location is registered in `$PATH`.
 
 ## Docker
 
