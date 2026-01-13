@@ -51,37 +51,9 @@ https://crates.io/crates/chandler
 
 https://docs.rs/chandler/latest/chandler/
 
-# INSTALL
+# INSTALLATION
 
-We support several installation methods.
-
-## Precompiled Binaries
-
-https://github.com/mcandre/chandler/releases
-
-1. Download release archive.
-2. Extract archive.
-3. Select executables for your target platform.
-4. Copy executabless to a convenient location, e.g. `$HOME/bin`.
-5. Ensure location is registered in `$PATH`.
-
-## Docker
-
-```sh
-docker pull n4jm4/chandler
-```
-
-## Build from Source
-
-```sh
-cargo install --force --path .
-```
-
-For more details on developing chandler itself, see [DEVELOPMENT.md](DEVELOPMENT.md).
-
-# RUNTIME REQUIREMENTS
-
-(None)
+See [INSTALL.md](INSTALL.md).
 
 ## Recommended
 
