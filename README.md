@@ -71,7 +71,7 @@ https://github.com/mcandre/chandler/releases
 docker pull n4jm4/chandler
 ```
 
-## Compile from Source
+## Build from Source
 
 ```sh
 cargo install --force --path .
