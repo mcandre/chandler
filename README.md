@@ -2,7 +2,7 @@
 
 ![chandler](chandler.png)
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/n4jm4/chandler)](https://hub.docker.com/r/n4jm4/chandler) [![Crates.io Downloads (latest version)](https://img.shields.io/crates/dv/chandler?label=crate%20downloads)](https://crates.io/crates/chandler) [![docs.rs](https://img.shields.io/docsrs/chandler)](https://docs.rs/chandler/latest/chandler/) ![license](https://img.shields.io/badge/license-BSD-3) [![Donate](https://img.shields.io/badge/GUMROAD-36a9ae?style=flat&logo=gumroad&logoColor=white)](https://mcandre.gumroad.com/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/n4jm4/chandler)](https://hub.docker.com/r/n4jm4/chandler) [![Crates.io Downloads (latest version)](https://img.shields.io/crates/dv/chandler?label=crate%20downloads)](https://crates.io/crates/chandler) [![docs.rs](https://img.shields.io/docsrs/chandler)](https://docs.rs/chandler/latest/chandler/) [![license](https://img.shields.io/badge/license-BSD-3)](LICENSE.md) [![Donate](https://img.shields.io/badge/GUMROAD-36a9ae?style=flat&logo=gumroad&logoColor=white)](https://mcandre.gumroad.com/)
 
 # SUMMARY
 
