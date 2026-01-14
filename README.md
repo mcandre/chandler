@@ -2,7 +2,7 @@
 
 ![chandler](chandler.png)
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/n4jm4/chandler)](https://hub.docker.com/r/n4jm4/chandler) [![Crates.io Downloads (latest version)](https://img.shields.io/crates/dv/chandler?label=crate%20downloads)](https://crates.io/crates/chandler) [![Donate](https://img.shields.io/badge/GUMROAD-36a9ae?style=flat&logo=gumroad&logoColor=white)](https://mcandre.gumroad.com/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/n4jm4/chandler)](https://hub.docker.com/r/n4jm4/chandler) [![Crates.io Downloads (latest version)](https://img.shields.io/crates/dv/chandler?label=crate%20downloads)](https://crates.io/crates/chandler) [![docs.rs](https://img.shields.io/docsrs/chandler)](https://docs.rs/chandler/latest/chandler/) ![license](https://img.shields.io/badge/license-BSD-3) [![Donate](https://img.shields.io/badge/GUMROAD-36a9ae?style=flat&logo=gumroad&logoColor=white)](https://mcandre.gumroad.com/)
 
 # SUMMARY
 
@@ -43,14 +43,6 @@ chandler automates industry norms for file permissions, file exclusions, lexicog
 
 Metadata is normalized as each entry enters the archive, regardless of the original file metadata. This smooths out common SDLC workflows, especially for multi-platform engineering teams.
 
-# CRATE
-
-https://crates.io/crates/chandler
-
-# API DOCUMENTATION
-
-https://docs.rs/chandler/latest/chandler/
-
 # INSTALLATION
 
 See [INSTALL.md](INSTALL.md).
@@ -61,10 +53,6 @@ See [INSTALL.md](INSTALL.md).
 * case sensitive or case aware file systems (e.g. ext4, exFAT, APFS, NTFS)
 * [GNU](https://www.gnu.org/software/tar/)/[BSD](https://man.freebsd.org/cgi/man.cgi?tar(1))/[Windows](https://ss64.com/nt/tar.html) tar with gzip support
 * [tree](https://en.wikipedia.org/wiki/Tree_(command))
-
-# LICENSE
-
-BSD-2-Clause
 
 # SEE ALSO
 
