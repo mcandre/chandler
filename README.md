@@ -59,6 +59,7 @@ See [INSTALL.md](INSTALL.md).
 * [factorio](https://github.com/mcandre/factorio)
 * [crit](https://github.com/mcandre/crit)
 * [linters](https://github.com/mcandre/linters)
+* [rockhopper](https://github.com/mcandre/rockhopper)
 * [tinyrick](https://github.com/mcandre/tinyrick)
 * [todolint](https://github.com/mcandre/todolint)
 * [tuggy](https://github.com/mcandre/tuggy)
