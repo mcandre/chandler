@@ -54,6 +54,10 @@ See [INSTALL.md](INSTALL.md).
 * [GNU](https://www.gnu.org/software/tar/)/[BSD](https://man.freebsd.org/cgi/man.cgi?tar(1))/[Windows](https://ss64.com/nt/tar.html) tar with gzip support
 * [tree](https://en.wikipedia.org/wiki/Tree_(command))
 
+# WARNING
+
+Not intended for use in backup sysetms. Rather, chandler is primarily designed to assist with preparing install media.
+
 # SEE ALSO
 
 * [factorio](https://github.com/mcandre/factorio)
