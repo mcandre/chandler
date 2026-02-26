@@ -30,7 +30,7 @@
 	clean-example \
 	clean-ports
 
-VERSION=0.0.9
+VERSION=0.0.10
 BANNER=chandler-$(VERSION)
 
 all: install
