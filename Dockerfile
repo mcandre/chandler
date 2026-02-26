@@ -1,10 +1,16 @@
 FROM alpine:3.23 AS build
-RUN apk add -U cargo
+ENV RUSTFLAGS='-C target-feature=+crt-static'
+ENV PATH=$PATH:/root/.cargo/bin
+RUN apk add -U \
+    build-base \
+    curl \
+    musl-dev && \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
+        sh -s -- --no-modify-path -y
 COPY . /src
 WORKDIR /src
-RUN cargo build --release
+RUN cargo build --release --target "$(uname -m)-unknown-linux-musl"
 
-FROM alpine:3.23
-RUN apk add -U libgcc
-COPY --from=build /src/target/release/chandler /usr/bin/chandler
-ENTRYPOINT ["/usr/bin/chandler"]
+FROM scratch
+COPY --from=build /src/target/*/release/chandler /
+ENTRYPOINT ["/chandler"]

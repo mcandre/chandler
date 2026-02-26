@@ -25,3 +25,6 @@ name = "chandler"
 [[bin]]
 name = "chandler"
 path = "src/bin/chandler.rs"
+
+[profile.release]
+strip = "symbols"

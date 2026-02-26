@@ -1,6 +1,6 @@
 # chandler: GNU tar normalizer
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/n4jm4/chandler)](https://hub.docker.com/r/n4jm4/chandler) [![Crates.io Downloads (recent)](https://img.shields.io/crates/dr/chandler?label=crate%20downloads)](https://crates.io/crates/chandler) [![GitHub Downloads](https://img.shields.io/github/downloads/mcandre/chandler/total?logo=github)](https://github.com/mcandre/chandler/releases) [![docs.rs](https://img.shields.io/docsrs/chandler)](https://docs.rs/chandler/latest/chandler/) [![Test](https://github.com/mcandre/chandler/actions/workflows/test.yml/badge.svg)](https://github.com/mcandre/chandler/actions/workflows/test.yml) [![license](https://img.shields.io/badge/license-BSD-3)](LICENSE.md) [![Donate](https://img.shields.io/badge/-any?logo=gumroad&label=Donate&color=grey)](https://mcandre.gumroad.com/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/n4jm4/chandler)](https://hub.docker.com/r/n4jm4/chandler) [![GitHub Downloads](https://img.shields.io/github/downloads/mcandre/chandler/total?logo=github)](https://github.com/mcandre/chandler/releases) [![Crates.io Downloads (recent)](https://img.shields.io/crates/dr/chandler?label=crate%20downloads)](https://crates.io/crates/chandler) [![docs.rs](https://img.shields.io/docsrs/chandler)](https://docs.rs/chandler/latest/chandler/) [![Test](https://github.com/mcandre/chandler/actions/workflows/test.yml/badge.svg)](https://github.com/mcandre/chandler/actions/workflows/test.yml) [![license](https://img.shields.io/badge/license-BSD-3)](LICENSE.md)
 
 ![chandler](chandler.png)
 
@@ -43,16 +43,43 @@ chandler automates industry norms for file permissions, file exclusions, lexicog
 
 Metadata is normalized as each entry enters the archive, regardless of the original file metadata. This smooths out common SDLC workflows, especially for multi-platform engineering teams.
 
-# INSTALLATION
+# DOWNLOAD
 
-See [INSTALL.md](INSTALL.md).
+```sh
+curl -L https://raw.githubusercontent.com/mcandre/chandler/refs/heads/main/install-chandler | sh
+```
 
-## Recommended
+## Postinstall
 
-* a UNIX-like environment (e.g. [WSL](https://learn.microsoft.com/en-us/windows/wsl/))
-* case sensitive or case aware file systems (e.g. ext4, exFAT, APFS, NTFS)
-* [GNU](https://www.gnu.org/software/tar/)/[BSD](https://man.freebsd.org/cgi/man.cgi?tar(1))/[Windows](https://ss64.com/nt/tar.html) tar with gzip support
-* [tree](https://en.wikipedia.org/wiki/Tree_(command))
+Ensure `$HOME/.local/bin` is registered with your shell's `PATH` environment variable.
+
+## Uninstall
+
+```sh
+curl -L https://raw.githubusercontent.com/mcandre/chandler/refs/heads/main/uninstall-chandler | sh
+```
+
+## System Requirements
+
+### Bitness
+
+64
+
+### Hosts
+
+* FreeBSD (Intel)
+* Illumos (Intel)
+* Linux (ARM, Intel)
+* macOS (ARM, Intel)
+* NetBSD (Intel)
+* Windows (ARM, Intel) via [WSL](https://learn.microsoft.com/en-us/windows/wsl/)
+
+### Prerequisites
+
+* [bash](https://www.gnu.org/software/bash/) 4+
+* [curl](https://curl.se/)
+
+For additional platforms and install methods, see our [install guide](INSTALL.md).
 
 # WARNING
 

@@ -14,8 +14,8 @@
 	crit \
 	doc \
 	docker-build \
-	docker-push \
 	docker-test \
+	docker-push \
 	install \
 	lint \
 	port \
@@ -33,7 +33,7 @@
 VERSION=0.0.9
 BANNER=chandler-$(VERSION)
 
-all: build
+all: install
 
 audit:
 	cargo audit
@@ -74,10 +74,10 @@ doc:
 	cargo doc
 
 docker-build:
-	tuggy -t n4jm4/chandler:$(VERSION) --load
+	tuggy -t n4jm4/chandler --load
 
 docker-push:
-	tuggy -t n4jm4/chandler:$(VERSION) -a n4jm4/chandler --push
+	tuggy -t n4jm4/chandler --push
 
 docker-test:
 	tuggy -t n4jm4/chandler:test --load
@@ -92,8 +92,8 @@ lint: \
 	doc \
 	rustfmt
 
-port: crit
-	chandler -C .crit/bin -czf $(BANNER).tgz $(BANNER)
+port:
+	./port -C .crit/bin -a chandler $(BANNER)
 
 publish:
 	cargo publish
