@@ -77,7 +77,7 @@ docker-build:
 	tuggy -t n4jm4/chandler --load
 
 docker-push:
-	tuggy -t n4jm4/chandler --push
+	tuggy -t n4jm4/chandler -a n4jm4/chandler:$(VERSION) --push
 
 docker-test:
 	tuggy -t n4jm4/chandler:test --load
