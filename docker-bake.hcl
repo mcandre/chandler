@@ -52,6 +52,6 @@ target "chandler" {
 target "test-chandler" {
     platforms = PLATFORMS
     tags = [
-        "n4jm4/rockhopper:test-chandler",
+        "n4jm4/chandler:test",
     ]
 }
