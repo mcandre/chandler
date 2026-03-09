@@ -58,7 +58,7 @@ Remove the application executables from the selected directory.
 
 64
 
-### Hosts
+### Operating Systems
 
 * FreeBSD (Intel)
 * Illumos (Intel)
