@@ -6,7 +6,6 @@
 	build \
 	cargo-check \
 	clean \
-	clean-archive \
 	clean-cargo \
 	clean-crit \
 	clean-example \
@@ -29,7 +28,6 @@
 	upload
 .IGNORE: \
 	clean \
-	clean-archive \
 	clean-cargo \
 	clean-crit \
 	clean-example \
@@ -51,14 +49,11 @@ cargo-check:
 	cargo check
 
 clean: \
-	clean-archive \
 	clean-cargo \
 	clean-crit \
 	clean-example \
+    clean-packages \
 	clean-ports
-
-clean-archive:
-	rm .crit/bin/$(BANNER).tgz
 
 clean-cargo:
 	cargo clean
