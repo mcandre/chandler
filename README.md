@@ -59,13 +59,13 @@ Ensure `$HOME/.local/bin` is registered with your shell's `PATH` environment var
 curl -L https://raw.githubusercontent.com/mcandre/chandler/refs/heads/main/uninstall-chandler | sh
 ```
 
-## System Requirements
+# SYSTEM REQUIREMENTS
 
-### Bitness
+## Bitness
 
 64
 
-### Hosts
+## Operating Systems
 
 * FreeBSD (Intel)
 * Illumos (Intel)
@@ -74,7 +74,7 @@ curl -L https://raw.githubusercontent.com/mcandre/chandler/refs/heads/main/unins
 * NetBSD (Intel)
 * WSL (ARM, Intel)
 
-### Prerequisites
+## Prerequisites
 
 * [bash](https://www.gnu.org/software/bash/) 4+
 * [curl](https://curl.se/)
