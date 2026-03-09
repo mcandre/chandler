@@ -1,6 +1,6 @@
-# chandler: GNU tar normalizer
+# chandler: tar normalizer
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/n4jm4/chandler)](https://hub.docker.com/r/n4jm4/chandler) [![GitHub Downloads](https://img.shields.io/github/downloads/mcandre/chandler/total?logo=github)](https://github.com/mcandre/chandler/releases) [![Crates.io Downloads (recent)](https://img.shields.io/crates/dr/chandler?label=crate%20downloads)](https://crates.io/crates/chandler) [![docs.rs](https://img.shields.io/docsrs/chandler)](https://docs.rs/chandler/latest/chandler/) [![Test](https://github.com/mcandre/chandler/actions/workflows/test.yml/badge.svg)](https://github.com/mcandre/chandler/actions/workflows/test.yml) [![license](https://img.shields.io/badge/license-BSD-3)](LICENSE.md)
+[![Docker Pulls](https://img.shields.io/docker/pulls/n4jm4/chandler)](https://hub.docker.com/r/n4jm4/chandler) [![GitHub Downloads](https://img.shields.io/github/downloads/mcandre/chandler/total?logo=github)](https://github.com/mcandre/chandler/releases) [![Crates.io Downloads (recent)](https://img.shields.io/crates/dr/chandler?label=crate%20downloads)](https://crates.io/crates/chandler) [![docs.rs](https://img.shields.io/docsrs/chandler)](https://docs.rs/chandler/latest/chandler/) [![Test](https://github.com/mcandre/chandler/actions/workflows/test.yml/badge.svg)](https://github.com/mcandre/chandler/actions/workflows/test.yml) [![license](https://img.shields.io/badge/license-BSD-0)](LICENSE.md)
 
 ![chandler](chandler.png)
 
