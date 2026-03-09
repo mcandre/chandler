@@ -2,18 +2,6 @@
 
 In addition to curl, chandler also supports alternative installation methods.
 
-# INSTALL (DOCKER)
-
-chandler is packaged as a Docker image.
-
-```sh
-docker pull n4jm4/chandler
-```
-
-## Prerequisites
-
-* [Docker](https://www.docker.com/)
-
 # INSTALL (CARGO)
 
 chandler is packaged as a Rust crate.
@@ -25,6 +13,20 @@ cargo install chandler
 ## Prerequisites
 
 * [cargo](https://doc.rust-lang.org/cargo/)
+
+# INSTALL (DOCKER)
+
+[Docker Hub](https://hub.docker.com/r/n4jm4/chandler)
+
+chandler is packaged as a Docker image.
+
+```sh
+docker pull n4jm4/chandler
+```
+
+## Prerequisites
+
+* [Docker](https://www.docker.com/)
 
 # INSTALL (PRECOMPILED BINARIES)
 
@@ -63,7 +65,7 @@ Remove the application executables from the selected directory.
 * Linux (ARM, Intel)
 * macOS (ARM, Intel)
 * NetBSD (Intel)
-* Windows (ARM, Intel) native or [WSL](https://learn.microsoft.com/en-us/windows/wsl/)
+* Windows (ARM, Intel)
 
 # INSTALL (COMPILE FROM SOURCE)
 

@@ -8,32 +8,38 @@
 	clean \
 	clean-archive \
 	clean-cargo \
+	clean-crit \
 	clean-example \
+	clean-packages \
 	clean-ports \
 	clippy \
 	crit \
 	doc \
 	docker-build \
-	docker-test \
 	docker-push \
+	docker-test \
 	install \
 	lint \
+	package \
 	port \
 	publish \
 	rustfmt \
 	test \
-	uninstall
+	uninstall \
+	upload
 .IGNORE: \
 	clean \
 	clean-archive \
 	clean-cargo \
+	clean-crit \
 	clean-example \
+	clean-packages \
 	clean-ports
 
-VERSION=0.0.10
-BANNER=chandler-$(VERSION)
+VERSION!=cargo metadata --format-version 1 --no-deps | jq -r ".packages[0].version"
+BANNER=chandler
 
-all: install
+all: build
 
 audit:
 	cargo audit
@@ -47,6 +53,7 @@ cargo-check:
 clean: \
 	clean-archive \
 	clean-cargo \
+	clean-crit \
 	clean-example \
 	clean-ports
 
@@ -56,13 +63,19 @@ clean-archive:
 clean-cargo:
 	cargo clean
 
+clean-crit:
+	crit -c
+
 clean-example:
 	rm -f example/Cargo.lock
 	rm -rf example/target
-	find example -iname '*.tgz' -print -delete
+	rm -rf example/.crit
+
+clean-packages:
+	rm -rf .rockhopper
 
 clean-ports:
-	crit -c
+	rm -rf .crit/bin/chandler-ports
 
 clippy:
 	cargo clippy
@@ -74,14 +87,13 @@ doc:
 	cargo doc
 
 docker-build:
-	tuggy -t n4jm4/chandler --load
+	docker buildx bake all
 
 docker-push:
-	tuggy -t n4jm4/chandler -a n4jm4/chandler:$(VERSION) --push
+	docker buildx bake production --push
 
 docker-test:
-	tuggy -t n4jm4/chandler:test --load
-	tuggy -t n4jm4/chandler:test --push
+	docker buildx bake test --push
 
 install:
 	cargo install --force --path .
@@ -91,6 +103,9 @@ lint: \
 	clippy \
 	doc \
 	rustfmt
+
+package:
+	rockhopper -r "version=$(VERSION)"
 
 port:
 	./port -C .crit/bin -a chandler $(BANNER)
@@ -105,4 +120,7 @@ test:
 	cargo test
 
 uninstall:
-	cargo uninstall chandler
+	cargo uninstall crit
+
+upload:
+	./upload

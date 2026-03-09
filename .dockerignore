@@ -1,9 +1,10 @@
 *.md
+*.mk
 *.png
 .editorconfig
 .rubberstamp
-install.mk
-tuggy.toml
+Cross.toml
+crit.toml
 example/
 .crit/
 .github/

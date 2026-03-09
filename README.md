@@ -72,7 +72,7 @@ curl -L https://raw.githubusercontent.com/mcandre/chandler/refs/heads/main/unins
 * Linux (ARM, Intel)
 * macOS (ARM, Intel)
 * NetBSD (Intel)
-* Windows (ARM, Intel) via [WSL](https://learn.microsoft.com/en-us/windows/wsl/)
+* WSL (ARM, Intel)
 
 ### Prerequisites
 
