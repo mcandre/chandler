@@ -60,12 +60,12 @@ Remove the application executables from the selected directory.
 
 ### Operating Systems
 
-* FreeBSD (Intel)
+* FreeBSD 13 (Intel)
 * Illumos (Intel)
 * Linux (ARM, Intel)
-* macOS (ARM, Intel)
-* NetBSD (Intel)
-* Windows (ARM, Intel)
+* macOS 26 Tahoe+ (ARM, Intel)
+* NetBSD 10.1 (Intel)
+* Windows 11+ (ARM, Intel)
 
 # INSTALL (COMPILE FROM SOURCE)
 

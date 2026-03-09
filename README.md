@@ -67,12 +67,12 @@ curl -L https://raw.githubusercontent.com/mcandre/chandler/refs/heads/main/unins
 
 ## Operating Systems
 
-* FreeBSD (Intel)
+* FreeBSD 13 (Intel)
 * Illumos (Intel)
 * Linux (ARM, Intel)
-* macOS (ARM, Intel)
-* NetBSD (Intel)
-* WSL (ARM, Intel)
+* macOS 26 Tahoe+ (ARM, Intel)
+* NetBSD 10.1 (Intel)
+* WSL 2 (ARM, Intel)
 
 ## Prerequisites
 
