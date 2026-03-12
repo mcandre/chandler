@@ -87,12 +87,11 @@ Not intended for use in backup sysetms. Rather, chandler is primarily designed t
 
 # SEE ALSO
 
-* [factorio](https://github.com/mcandre/factorio)
 * [crit](https://github.com/mcandre/crit)
 * [linters](https://github.com/mcandre/linters)
 * [rockhopper](https://github.com/mcandre/rockhopper)
 * [tinyrick](https://github.com/mcandre/tinyrick)
 * [todolint](https://github.com/mcandre/todolint)
-* [tuggy](https://github.com/mcandre/tuggy)
+* [tuco](https://github.com/mcandre/tuco)
 
 📼
